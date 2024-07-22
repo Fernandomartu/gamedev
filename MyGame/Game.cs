@@ -21,6 +21,7 @@ namespace SimpleGame
             IsMouseVisible = true;
 
             networkManager = new NetworkManager();
+            networkManager.OnMessageReceived += HandleMessageReceived;
         }
 
         protected override void Initialize()
@@ -51,6 +52,10 @@ namespace SimpleGame
             foreach (var player in players)
             {
                 player.Update(gameTime);
+                // Send player position to the other instance
+                var position = player.ControlledCreature.HeadPosition;
+                var message = $"PlayerPosition:{position.X},{position.Y}";
+                _ = networkManager.SendData(message);
             }
 
             // Update the snake to follow the player's head position
@@ -90,6 +95,19 @@ namespace SimpleGame
             else
             {
                 await networkManager.ConnectToServer(ip, port);
+            }
+        }
+
+        private void HandleMessageReceived(string message)
+        {
+            if (message.StartsWith("PlayerPosition:"))
+            {
+                var parts = message.Substring("PlayerPosition:".Length).Split(',');
+                var x = float.Parse(parts[0]);
+                var y = float.Parse(parts[1]);
+                Vector2 position = new Vector2(x, y);
+                // Update enemy snake position based on the received message
+                enemySnake.SetPosition(position);
             }
         }
 

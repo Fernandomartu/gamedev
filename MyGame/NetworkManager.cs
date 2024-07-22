@@ -14,6 +14,8 @@ public class NetworkManager
     public bool IsServer { get; private set; }
     public bool IsConnected { get; private set; }
 
+    public event Action<string> OnMessageReceived;
+
     public async Task StartServer(int port)
     {
         server = new TcpListener(IPAddress.Any, port);
@@ -60,7 +62,7 @@ public class NetworkManager
             {
                 string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                 Console.WriteLine("Received: " + message);
-                // Process the received data
+                OnMessageReceived?.Invoke(message);
             }
         }
     }
