@@ -3,6 +3,7 @@ C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.runtimeconfig.json
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.dll
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.pdb
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\LiteNetLib.dll
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MonoGame.Framework.dll
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\linux-x64\native\libSDL2-2.0.so.0
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\linux-x64\native\libopenal.so.1
@@ -17,6 +18,7 @@ C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.AssemblyInfoInputs.cache
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.AssemblyInfo.cs
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.csproj.CoreCompileInputs.cache
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.sourcelink.json
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.csproj.Up2Date
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.dll
 C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\refint\MyGame.dll

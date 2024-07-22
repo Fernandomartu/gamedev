@@ -34,14 +34,14 @@ namespace SimpleGameServer
                 playerPositions[peer.Id] = new Vector2(100, 100); // Initial position for new players
             };
 
-            listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
+            listener.NetworkReceiveEvent += (fromPeer, reader) =>
             {
-                var messageType = (MessageType)dataReader.GetByte();
+                var messageType = (MessageType)reader.GetByte();
 
                 if (messageType == MessageType.PlayerMovement)
                 {
-                    var x = dataReader.GetFloat();
-                    var y = dataReader.GetFloat();
+                    var x = reader.GetFloat();
+                    var y = reader.GetFloat();
                     playerPositions[fromPeer.Id] = new Vector2(x, y);
                 }
 
@@ -50,7 +50,7 @@ namespace SimpleGameServer
 
             listener.PeerDisconnectedEvent += (peer, info) =>
             {
-                Console.WriteLine($"Player disconnected: {peer.EndPoint}");
+                Console.WriteLine($"Player disconnected: {peer.RemoteEndPoint}");
                 playerPositions.Remove(peer.Id);
             };
         }

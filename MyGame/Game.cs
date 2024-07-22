@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SimpleGame
 {
@@ -11,12 +12,15 @@ namespace SimpleGame
         private SpriteBatch spriteBatch;
         private List<Player> players;
         private Snake enemySnake;
+        private NetworkManager networkManager;
 
         public Game()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            networkManager = new NetworkManager();
         }
 
         protected override void Initialize()
@@ -31,6 +35,7 @@ namespace SimpleGame
             enemySnake = new Snake(GraphicsDevice, enemyStartPosition);
 
             base.Initialize();
+            StartMultiplayer();
         }
 
         protected override void LoadContent()
@@ -70,6 +75,28 @@ namespace SimpleGame
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private async void StartMultiplayer()
+        {
+            bool isServer = false; // Change this based on your needs
+            int port = 12345;
+            string ip = "127.0.0.1"; // Change to your server's IP address
+
+            if (isServer)
+            {
+                await networkManager.StartServer(port);
+            }
+            else
+            {
+                await networkManager.ConnectToServer(ip, port);
+            }
+        }
+
+        protected override void UnloadContent()
+        {
+            networkManager.Disconnect();
+            base.UnloadContent();
         }
     }
 }

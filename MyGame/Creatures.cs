@@ -15,6 +15,9 @@ namespace SimpleGame
         public Vector2 HeadPosition => circlePositions[0];
         public float CircleSpeed => circleSpeed;  // Public getter for circleSpeed
 
+        // Public getter for circleTexture
+        public Texture2D CircleTexture => circleTexture;
+
         public Creature(GraphicsDevice graphicsDevice, int circleCount, int circleRadius, float circleSpeed, Vector2 startPosition, Color color)
         {
             this.circleRadius = circleRadius;
