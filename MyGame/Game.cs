@@ -11,8 +11,9 @@ namespace SimpleGame
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private List<Player> players;
-        private Snake enemySnake;
+        private Dictionary<int, Snake> enemySnakes;
         private NetworkManager networkManager;
+        private int playerId;
 
         public Game()
         {
@@ -22,6 +23,7 @@ namespace SimpleGame
 
             networkManager = new NetworkManager();
             networkManager.OnMessageReceived += HandleMessageReceived;
+            enemySnakes = new Dictionary<int, Snake>();
         }
 
         protected override void Initialize()
@@ -30,10 +32,10 @@ namespace SimpleGame
 
             Vector2 playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
             var playerLizard = new Lizard(GraphicsDevice, playerStartPosition);
-            players.Add(new Player(playerLizard));
+            var player = new Player(playerLizard);
+            players.Add(player);
 
-            Vector2 enemyStartPosition = playerStartPosition + new Vector2(100, 0);
-            enemySnake = new Snake(GraphicsDevice, enemyStartPosition);
+            playerId = players.Count;
 
             base.Initialize();
             StartMultiplayer();
@@ -52,14 +54,11 @@ namespace SimpleGame
             foreach (var player in players)
             {
                 player.Update(gameTime);
-                // Send player position to the other instance
+                // Send player position to the other instances
                 var position = player.ControlledCreature.HeadPosition;
-                var message = $"PlayerPosition:{position.X},{position.Y}";
+                var message = $"PlayerPosition:{playerId}:{position.X},{position.Y}";
                 _ = networkManager.SendData(message);
             }
-
-            // Update the snake to follow the player's head position
-            enemySnake.Update(gameTime, players[0].ControlledCreature.HeadPosition);
 
             base.Update(gameTime);
         }
@@ -74,8 +73,11 @@ namespace SimpleGame
                 player.Draw(spriteBatch);
             }
 
-            // Draw the enemy snake
-            enemySnake.Draw(spriteBatch);
+            // Draw enemy snakes
+            foreach (var enemySnake in enemySnakes.Values)
+            {
+                enemySnake.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
 
@@ -84,30 +86,31 @@ namespace SimpleGame
 
         private async void StartMultiplayer()
         {
-            bool isServer = true; // Change this based on your needs
             int port = 12345;
             string ip = "127.0.0.1"; // Change to your server's IP address
 
-            if (isServer)
-            {
-                await networkManager.StartServer(port);
-            }
-            else
-            {
-                await networkManager.ConnectToServer(ip, port);
-            }
+            await networkManager.ConnectToServer(ip, port);
         }
 
         private void HandleMessageReceived(string message)
         {
             if (message.StartsWith("PlayerPosition:"))
             {
-                var parts = message.Substring("PlayerPosition:".Length).Split(',');
-                var x = float.Parse(parts[0]);
-                var y = float.Parse(parts[1]);
+                var parts = message.Substring("PlayerPosition:".Length).Split(':');
+                var id = int.Parse(parts[0]);
+                var positionParts = parts[1].Split(',');
+                var x = float.Parse(positionParts[0]);
+                var y = float.Parse(positionParts[1]);
                 Vector2 position = new Vector2(x, y);
-                // Update enemy snake position based on the received message
-                enemySnake.SetPosition(position);
+
+                if (!enemySnakes.ContainsKey(id))
+                {
+                    enemySnakes[id] = new Snake(GraphicsDevice, position);
+                }
+                else
+                {
+                    enemySnakes[id].SetPosition(position);
+                }
             }
         }
 
