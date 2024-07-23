@@ -84,7 +84,7 @@ namespace SimpleGame
 
         private async void StartMultiplayer()
         {
-            bool isServer = false; // Change this based on your needs
+            bool isServer = true; // Change this based on your needs
             int port = 12345;
             string ip = "127.0.0.1"; // Change to your server's IP address
 
