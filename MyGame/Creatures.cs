@@ -62,13 +62,12 @@ namespace SimpleGame
             }
         }
 
-        // New SetPosition method
-        public void SetPosition(Vector2 position)
+        public void SetPosition(Vector2 newPosition)
         {
-            Vector2 offset = position - circlePositions[0];
-            for (int i = 0; i < circlePositions.Count; i++)
+            circlePositions[0] = newPosition;
+            for (int i = 1; i < circlePositions.Count; i++)
             {
-                circlePositions[i] += offset;
+                circlePositions[i] = Vector2.Lerp(circlePositions[i], circlePositions[i - 1], 0.5f);
             }
         }
 
@@ -79,42 +78,17 @@ namespace SimpleGame
                 var direction = circlePositions[i - 1] - circlePositions[i];
                 float length = direction.Length();
 
-                // Log direction and length
-                Console.WriteLine($"Circle {i} direction before normalization: {direction}, length: {length}");
-
-                // Prevent division by zero
                 if (length < float.Epsilon)
                 {
                     length = 1;
                 }
 
                 direction.Normalize();
-
-                // Ensure normalization does not produce NaN
-                if (float.IsNaN(direction.X) || float.IsNaN(direction.Y))
-                {
-                    Console.WriteLine($"NaN detected in direction normalization for circle {i}");
-                    direction = Vector2.UnitX; // Default direction to prevent NaN
-                }
-
                 float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-                if (float.IsNaN(angle))
-                {
-                    Console.WriteLine($"NaN detected in angle calculation for circle {i}");
-                    angle = 0f; // Default angle to prevent NaN
-                }
 
                 if (i > 1)
                 {
                     float prevAngle = (float)Math.Atan2(circlePositions[i - 2].Y - circlePositions[i - 1].Y, circlePositions[i - 2].X - circlePositions[i - 1].X);
-
-                    if (float.IsNaN(prevAngle))
-                    {
-                        Console.WriteLine($"NaN detected in prevAngle calculation for circle {i}");
-                        prevAngle = 0f; // Default previous angle to prevent NaN
-                    }
-
                     float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
 
                     if (Math.Abs(angleDiff) > maxAngleChange)
@@ -124,25 +98,7 @@ namespace SimpleGame
                 }
 
                 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-
-                // Ensure new direction does not produce NaN
-                if (float.IsNaN(direction.X) || float.IsNaN(direction.Y))
-                {
-                    Console.WriteLine($"NaN detected in new direction calculation for circle {i}");
-                    direction = Vector2.UnitX; // Default direction to prevent NaN
-                }
-
                 circlePositions[i] = circlePositions[i - 1] - direction * circleRadius;
-
-                // Ensure new position does not produce NaN
-                if (float.IsNaN(circlePositions[i].X) || float.IsNaN(circlePositions[i].Y))
-                {
-                    Console.WriteLine($"NaN detected in new position calculation for circle {i}");
-                    circlePositions[i] = circlePositions[i - 1]; // Default position to prevent NaN
-                }
-
-                // Log positions for debugging
-                Console.WriteLine($"Circle {i}: {circlePositions[i]}");
             }
         }
     }
@@ -156,31 +112,15 @@ namespace SimpleGame
 
         public override void Update(GameTime gameTime, Vector2 targetPosition)
         {
-            // Log targetPosition
-            Console.WriteLine($"Update targetPosition: {targetPosition}");
-
             if (float.IsNaN(targetPosition.X) || float.IsNaN(targetPosition.Y))
             {
-                Console.WriteLine("NaN detected in targetPosition");
-                targetPosition = HeadPosition; // Default target position to prevent NaN
+                targetPosition = HeadPosition;
             }
 
             Vector2 direction = targetPosition - circlePositions[0];
             direction.Normalize();
 
-            // Log direction
-            Console.WriteLine($"Head direction before normalization: {direction}, length: {direction.Length()}");
-
-            if (float.IsNaN(direction.X) || float.IsNaN(direction.Y))
-            {
-                Console.WriteLine("NaN detected in direction normalization");
-                direction = Vector2.UnitX; // Default direction to prevent NaN
-            }
-
             circlePositions[0] += direction * circleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            // Log new head position
-            Console.WriteLine($"New head position: {circlePositions[0]}");
 
             UpdatePositions(MathHelper.ToRadians(60f), gameTime);
         }
@@ -195,31 +135,15 @@ namespace SimpleGame
 
         public override void Update(GameTime gameTime, Vector2 targetPosition)
         {
-            // Log targetPosition
-            Console.WriteLine($"Update targetPosition: {targetPosition}");
-
             if (float.IsNaN(targetPosition.X) || float.IsNaN(targetPosition.Y))
             {
-                Console.WriteLine("NaN detected in targetPosition");
-                targetPosition = HeadPosition; // Default target position to prevent NaN
+                targetPosition = HeadPosition;
             }
 
             Vector2 direction = targetPosition - circlePositions[0];
             direction.Normalize();
 
-            // Log direction
-            Console.WriteLine($"Head direction before normalization: {direction}, length: {direction.Length()}");
-
-            if (float.IsNaN(direction.X) || float.IsNaN(direction.Y))
-            {
-                Console.WriteLine("NaN detected in direction normalization");
-                direction = Vector2.UnitX; // Default direction to prevent NaN
-            }
-
             circlePositions[0] += direction * circleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            // Log new head position
-            Console.WriteLine($"New head position: {circlePositions[0]}");
 
             UpdatePositions(MathHelper.ToRadians(40f), gameTime);
         }

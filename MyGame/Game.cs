@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using System.Text;
 
 namespace SimpleGame
 {
