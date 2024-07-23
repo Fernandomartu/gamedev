@@ -1,0 +1,15 @@
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\bin\Debug\net8.0\Server.exe
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\bin\Debug\net8.0\Server.deps.json
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\bin\Debug\net8.0\Server.runtimeconfig.json
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\bin\Debug\net8.0\Server.dll
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\bin\Debug\net8.0\Server.pdb
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.AssemblyInfoInputs.cache
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.AssemblyInfo.cs
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.csproj.CoreCompileInputs.cache
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.sourcelink.json
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.dll
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\refint\Server.dll
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.pdb
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\Server.genruntimeconfig.cache
+C:\Users\Admin\OneDrive\Documents\work projects\gamedev\Server\obj\Debug\net8.0\ref\Server.dll
