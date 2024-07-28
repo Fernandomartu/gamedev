@@ -107,7 +107,7 @@ namespace GameServer
             while (true)
             {
                 BroadcastGameState();
-                await Task.Delay(100); // Broadcast every 100ms
+                await Task.Delay(17); // Broadcast every 100ms
             }
         }
 
