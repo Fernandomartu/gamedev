@@ -51,6 +51,12 @@ protected override void LoadContent()
     Log.Information("Content loaded.");
 }
 
+protected override void Initialize()
+{
+    base.Initialize();
+    messageHandler = new MessageHandler(this, playersDict, GraphicsDevice, creatureOptions, selectedOption);
+    Log.Information("Game initialized.");
+}
   
 
         protected override void Update(GameTime gameTime)
