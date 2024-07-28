@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System;
+using Serilog;
 
 namespace SimpleGame
 {
@@ -43,101 +44,100 @@ namespace SimpleGame
             selectedOption = 0;
         }
 
-        protected override void Initialize()
-        {
-            base.Initialize();
-            messageHandler = new MessageHandler(this, playersDict, GraphicsDevice, creatureOptions, selectedOption);  // Initialize here
-        }
+protected override void LoadContent()
+{
+    spriteBatch = new SpriteBatch(GraphicsDevice);
+    menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
+    Log.Information("Content loaded.");
+}
 
-        protected override void LoadContent()
-        {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
-        }
+  
 
         protected override void Update(GameTime gameTime)
+{
+    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        Exit();
+
+    var keyboardState = Keyboard.GetState();
+
+    if (gameState == GameState.Menu)
+    {
+        if (keyboardState.IsKeyDown(Keys.Up))
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            var keyboardState = Keyboard.GetState();
-
-            if (gameState == GameState.Menu)
-            {
-                if (keyboardState.IsKeyDown(Keys.Up))
-                {
-                    selectedOption = (selectedOption > 0) ? selectedOption - 1 : creatureOptions.Count - 1;
-                }
-                else if (keyboardState.IsKeyDown(Keys.Down))
-                {
-                    selectedOption = (selectedOption < creatureOptions.Count - 1) ? selectedOption + 1 : 0;
-                }
-                else if (keyboardState.IsKeyDown(Keys.Enter))
-                {
-                    string selectedCreature = creatureOptions[selectedOption];
-                    StartMultiplayer(selectedCreature);
-                    gameState = GameState.Playing;
-                }
-            }
-            else if (gameState == GameState.Playing)
-            {
-                try
-                {
-                    if (playerIdAssigned)
-                    {
-                        if (playersDict.ContainsKey(playerId))
-                        {
-                            var player = playersDict[playerId];
-                            player.Update(gameTime);
-
-                            // Send positions of all body parts to the server
-                            var positions = player.GetAllPositions();
-                            var message = $"PlayerPositions:{playerId}";
-                            foreach (var position in positions)
-                            {
-                                message += $":{position.X},{position.Y}";
-                            }
-                            message += messageDelimiter;
-                            _ = networkManager.SendData(message);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error in Update: {ex.Message}");
-                }
-            }
-
-            base.Update(gameTime);
+            selectedOption = (selectedOption > 0) ? selectedOption - 1 : creatureOptions.Count - 1;
         }
-
-        protected override void Draw(GameTime gameTime)
+        else if (keyboardState.IsKeyDown(Keys.Down))
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            spriteBatch.Begin();
-            try
-            {
-                if (gameState == GameState.Menu)
-                {
-                    DrawMenu();
-                }
-                else if (gameState == GameState.Playing)
-                {
-                    foreach (var player in playersDict.Values)
-                    {
-                        player.Draw(spriteBatch);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in Draw: {ex.Message}");
-            }
-            spriteBatch.End();
-
-            base.Draw(gameTime);
+            selectedOption = (selectedOption < creatureOptions.Count - 1) ? selectedOption + 1 : 0;
         }
+        else if (keyboardState.IsKeyDown(Keys.Enter))
+        {
+            string selectedCreature = creatureOptions[selectedOption];
+            StartMultiplayer(selectedCreature);
+            gameState = GameState.Playing;
+        }
+    }
+    else if (gameState == GameState.Playing)
+    {
+        try
+        {
+            if (playerIdAssigned)
+            {
+                if (playersDict.ContainsKey(playerId))
+                {
+                    var player = playersDict[playerId];
+                    player.Update(gameTime);
+
+                    // Send positions of all body parts to the server
+                    var positions = player.GetAllPositions();
+                    var message = $"PlayerPositions:{playerId}";
+                    foreach (var position in positions)
+                    {
+                        message += $":{position.X},{position.Y}";
+                    }
+                    message += messageDelimiter;
+                    _ = networkManager.SendData(message);
+                    Log.Information("Sent player positions to server: {Message}", message);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error in Update");
+        }
+    }
+
+    base.Update(gameTime);
+}
+
+     protected override void Draw(GameTime gameTime)
+{
+    GraphicsDevice.Clear(Color.CornflowerBlue);
+
+    spriteBatch.Begin();
+    try
+    {
+        if (gameState == GameState.Menu)
+        {
+            DrawMenu();
+        }
+        else if (gameState == GameState.Playing)
+        {
+            foreach (var player in playersDict.Values)
+            {
+                player.Draw(spriteBatch);
+                Log.Information("Drawing player with head position: {HeadPosition}", player.ControlledCreature.HeadPosition);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error in Draw");
+    }
+    spriteBatch.End();
+
+    base.Draw(gameTime);
+}
 
         private void DrawMenu()
         {
@@ -151,24 +151,27 @@ namespace SimpleGame
             }
         }
 
-        private async void StartMultiplayer(string creatureType)
-        {
-            int port = 12345;
-            string ip = "192.168.1.153"; // Change to your server's IP address
+    private async void StartMultiplayer(string creatureType)
+{
+    int port = 12345;
+    string ip = "192.168.1.153"; // Change to your server's IP address
 
-            await networkManager.ConnectToServer(ip, port);
-            await networkManager.SendData($"CreatureType:{creatureType}{messageDelimiter}");
-        }
+    Log.Information("Starting multiplayer...");
+    await networkManager.StartClient(ip, port);
+    Log.Information("Sending creature type to server...");
+    await networkManager.SendData($"CreatureType:{creatureType}{messageDelimiter}");
+}
 
         private void HandleMessageReceived(string message)
         {
             messageHandler.HandleMessageReceived(message);
         }
 
-        protected override void UnloadContent()
-        {
-            networkManager.Disconnect();
-            base.UnloadContent();
-        }
+      protected override void UnloadContent()
+{
+    networkManager.Disconnect();
+    base.UnloadContent();
+    Log.Information("Content unloaded.");
+}
     }
 }

@@ -3,85 +3,57 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 public class NetworkManager
 {
-    private TcpClient client;
-    private TcpListener server;
-    private NetworkStream stream;
+    private UdpClient client;
+    private IPEndPoint serverEndpoint;
     private byte[] buffer;
-
-    public bool IsServer { get; private set; }
-    public bool IsConnected { get; private set; }
 
     public event Action<string> OnMessageReceived;
 
-    public async Task StartServer(int port)
+    public async Task StartClient(string ip, int port)
     {
-        server = new TcpListener(IPAddress.Any, port);
-        server.Start();
-        IsServer = true;
-
-        Console.WriteLine("Server started. Waiting for connection...");
-        client = await server.AcceptTcpClientAsync();
-        stream = client.GetStream();
+        client = new UdpClient();
+        serverEndpoint = new IPEndPoint(IPAddress.Parse(ip), port);
         buffer = new byte[1024];
-        IsConnected = true;
-
-        Console.WriteLine("Client connected.");
-        _ = Task.Run(() => ReceiveData());
-    }
-
-    public async Task ConnectToServer(string ip, int port)
-    {
-        client = new TcpClient();
-        await client.ConnectAsync(ip, port);
-        stream = client.GetStream();
-        buffer = new byte[1024];
-        IsConnected = true;
-
-        Console.WriteLine("Connected to server.");
+        Log.Information("Client started.");
         _ = Task.Run(() => ReceiveData());
     }
 
     public async Task SendData(string message)
     {
-        if (IsConnected)
-        {
-            byte[] data = Encoding.ASCII.GetBytes(message);
-            await stream.WriteAsync(data, 0, data.Length);
-        }
+        byte[] data = Encoding.ASCII.GetBytes(message);
+        await client.SendAsync(data, data.Length, serverEndpoint);
+        Log.Information("Sent to server: {Message}", message);
     }
 
-    private async Task ReceiveData()
+  private async Task ReceiveData()
+{
+    while (true)
     {
-        while (IsConnected)
+        try
         {
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            if (bytesRead > 0)
-            {
-                string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                Console.WriteLine("Received: " + message);
-                OnMessageReceived?.Invoke(message);
-            }
+            var result = await client.ReceiveAsync();
+            string message = Encoding.ASCII.GetString(result.Buffer);
+            Log.Information("Received: {Message}", message);
+            OnMessageReceived?.Invoke(message);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error in ReceiveData");
         }
     }
+}
 
     public void Disconnect()
     {
-        if (IsConnected)
+        if (client != null)
         {
-            stream.Close();
             client.Close();
-            IsConnected = false;
-
-            if (IsServer)
-            {
-                server.Stop();
-                IsServer = false;
-            }
-
-            Console.WriteLine("Disconnected.");
+            client = null;
+            Log.Information("Client disconnected.");
         }
     }
 }

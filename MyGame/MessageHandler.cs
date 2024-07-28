@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SimpleGame;
+using Serilog;
 
 namespace SimpleGame
 {
@@ -26,6 +26,7 @@ namespace SimpleGame
 
         public void HandleMessageReceived(string message)
         {
+            Log.Information("Handling received message: {Message}", message);
             try
             {
                 var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
@@ -50,7 +51,7 @@ namespace SimpleGame
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Client] Error in HandleMessageReceived: {ex.Message}");
+                Log.Error(ex, "[Client] Error in HandleMessageReceived");
             }
         }
 
@@ -84,7 +85,7 @@ namespace SimpleGame
             var player = new Player(playerCreature);
             playersDict[game.playerId] = player;
 
-            Console.WriteLine($"[Client] Assigned PlayerId: {game.playerId}, Start Position: {playerStartPosition}");
+            Log.Information("[Client] Assigned PlayerId: {PlayerId}, Start Position: {PlayerStartPosition}", game.playerId, playerStartPosition);
         }
 
         private void HandlePlayerPositions(string content)
@@ -106,12 +107,12 @@ namespace SimpleGame
                 var playerCreature = CreateCreature("Lizard", graphicsDevice, positions[0]);
                 var player = new Player(playerCreature);
                 playersDict[id] = player;
-                Console.WriteLine($"[Client] Added new player with ID: {id} at starting position {positions[0]}");
+                Log.Information("[Client] Added new player with ID: {Id} at starting position {Positions}", id, positions[0]);
             }
             else
             {
                 playersDict[id].ControlledCreature.SetAllPositions(positions);
-                Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
+                Log.Information("[Client] Updated positions for player {Id}: {Positions}", id, string.Join(", ", positions));
             }
         }
 
@@ -127,14 +128,14 @@ namespace SimpleGame
                 var playerCreature = CreateCreature(creatureType, graphicsDevice, playerStartPosition);
                 var player = new Player(playerCreature);
                 playersDict[id] = player;
-                Console.WriteLine($"[Client] Added new player with ID: {id}, Creature: {creatureType}");
+                Log.Information("[Client] Added new player with ID: {Id}, Creature: {CreatureType}", id, creatureType);
             }
             else
             {
                 var player = playersDict[id];
                 var newCreature = CreateCreature(creatureType, graphicsDevice, player.ControlledCreature.HeadPosition);
                 player.ChangeCreature(newCreature);
-                Console.WriteLine($"[Client] Updated player {id} to Creature: {creatureType}");
+                Log.Information("[Client] Updated player {Id} to Creature: {CreatureType}", id, creatureType);
             }
         }
 

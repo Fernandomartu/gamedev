@@ -1,4 +1,5 @@
 ﻿using System;
+using Serilog;
 
 namespace SimpleGame
 {
@@ -7,8 +8,25 @@ namespace SimpleGame
         [STAThread]
         static void Main()
         {
-            using (var game = new Game())
-                game.Run();
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            try
+            {
+                Log.Information("Starting the game...");
+                using (var game = new Game())
+                    game.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "The game encountered a fatal error.");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }
