@@ -1,0 +1,58 @@
+# Ignore build output directories for both MyGame and Server
+/MyGame/bin/
+/MyGame/obj/
+/Server/bin/
+/Server/obj/
+
+# Ignore specific file types
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# Ignore auto-generated files
+*.genruntimeconfig.cache
+*.g.props
+*.AssemblyInfoInputs.cache
+*.FileListAbsolute.txt
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.CoreCompileInputs.cache
+*.nuget.dgspec.json
+*.nuget.cache
+*.nuget.g.props
+*.sourceinfo
+
+# Ignore debug files
+/MyGame/MyGame.dll
+/MyGame/MyGame.pdb
+/Server/Server.dll
+/Server/Server.pdb
+
+# Ignore logs
+*.log
+
+# Ignore IDE directories
+/.vs/
+/.vscode/
+/.idea/
+
+# Ignore user-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore NuGet packages
+*.nupkg
+*.snupkg
+*.nuget/
+
+/.dotnet/
+
+# Ignore Test Results
+/TestResults/
