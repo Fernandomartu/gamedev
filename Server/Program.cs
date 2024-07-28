@@ -9,130 +9,95 @@ namespace GameServer
 {
     public static class Program
     {
-        private static TcpListener server;
-        private static List<TcpClient> clients = new List<TcpClient>();
+        private static UdpClient udpServer;
+        private static List<IPEndPoint> clients = new List<IPEndPoint>();
         private static Dictionary<int, List<Vector2>> playerPositions = new Dictionary<int, List<Vector2>>();
-        private static int nextPlayerId = 1;
-        private static byte[] buffer = new byte[1024];
-        private static string messageDelimiter = "\n";
-
         private static Dictionary<int, string> playerCreatures = new Dictionary<int, string>();
+        private static int nextPlayerId = 1;
+        private static string messageDelimiter = "\n";
 
         public static async Task Main(string[] args)
         {
             int port = 12345;
-            server = new TcpListener(IPAddress.Any, port);
-            server.Start();
+            udpServer = new UdpClient(port);
             Console.WriteLine($"Server started on port {port}.");
 
-            _ = Task.Run(() => BroadcastGameStateLoop());
+            _ = Task.Run(() => ReceiveMessages());
 
             while (true)
             {
-                var client = await server.AcceptTcpClientAsync();
-                clients.Add(client);
-                Console.WriteLine("Client connected.");
-                int playerId = nextPlayerId++;
-                await SendDataToClient(client, $"PlayerId:{playerId}{messageDelimiter}");
-                var initialPosition = new Vector2(400 + (playerId * 20), 240);
-                playerPositions[playerId] = new List<Vector2> { initialPosition }; // Initialize with the head position
-                _ = Task.Run(() => HandleClient(client, playerId));
-            }
-        }
-
-   private static async Task HandleClient(TcpClient client, int playerId)
-{
-    var stream = client.GetStream();
-    var data = new StringBuilder();
-    string selectedCreatureType = "Lizard"; // Default type
-
-    while (client.Connected)
-    {
-        try
-        {
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            if (bytesRead > 0)
-            {
-                data.Append(Encoding.ASCII.GetString(buffer, 0, bytesRead));
-                var messages = data.ToString().Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var message in messages)
+                var result = await udpServer.ReceiveAsync();
+                var clientEndPoint = result.RemoteEndPoint;
+                var message = Encoding.ASCII.GetString(result.Buffer);
+                
+                if (!clients.Contains(clientEndPoint))
                 {
-                    Console.WriteLine($"[Server] Received: {message}");
-                    if (message.StartsWith("PlayerPositions:"))
-                    {
-                        var parts = message.Substring("PlayerPositions:".Length).Split(':');
-                        var id = int.Parse(parts[0]);
-                        var positions = new List<Vector2>();
-
-                        for (int i = 1; i < parts.Length; i++)
-                        {
-                            var positionParts = parts[i].Split(',');
-                            float x = float.Parse(positionParts[0]);
-                            float y = float.Parse(positionParts[1]);
-                            positions.Add(new Vector2(x, y));
-                        }
-
-                        playerPositions[id] = positions; // Store the list of positions
-                        Console.WriteLine($"[Server] Updated positions for player {id}: {string.Join(", ", positions)}");
-                    }
-                    else if (message.StartsWith("CreatureType:"))
-                    {
-                        selectedCreatureType = message.Substring("CreatureType:".Length);
-                        playerCreatures[playerId] = selectedCreatureType;
-                        BroadcastCreatureType(playerId, selectedCreatureType);
-                        Console.WriteLine($"[Server] Player {playerId} selected creature: {selectedCreatureType}");
-                    }
+                    clients.Add(clientEndPoint);
+                    Console.WriteLine("Client connected.");
+                    int playerId = nextPlayerId++;
+                    await SendDataToClient(clientEndPoint, $"PlayerId:{playerId}{messageDelimiter}");
+                    var initialPosition = new Vector2(400 + (playerId * 20), 240);
+                    playerPositions[playerId] = new List<Vector2> { initialPosition }; // Initialize with the head position
                 }
 
-                // Clear the data buffer
-                data.Clear();
+                HandleMessage(clientEndPoint, message);
             }
         }
-        catch (Exception ex)
+
+        private static async Task ReceiveMessages()
         {
-            Console.WriteLine($"[Server] Error handling client {playerId}: {ex.Message}");
-            break;
+            while (true)
+            {
+                var result = await udpServer.ReceiveAsync();
+                var clientEndPoint = result.RemoteEndPoint;
+                var message = Encoding.ASCII.GetString(result.Buffer);
+                HandleMessage(clientEndPoint, message);
+            }
+        }
+
+       private static void HandleMessage(IPEndPoint clientEndPoint, string message)
+{
+    var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+
+    foreach (var msg in messages)
+    {
+        Console.WriteLine($"[Server] Received: {msg}");
+        if (msg.StartsWith("PlayerPositions:"))
+        {
+            var parts = msg.Substring("PlayerPositions:".Length).Split(':');
+            var id = int.Parse(parts[0]);
+            var positions = new List<Vector2>();
+
+            for (int i = 1; i < parts.Length; i++)
+            {
+                var positionParts = parts[i].Split(',');
+                float x = float.Parse(positionParts[0]);
+                float y = float.Parse(positionParts[1]);
+                positions.Add(new Vector2(x, y));
+            }
+
+            playerPositions[id] = positions; // Store the list of positions
+            Console.WriteLine($"[Server] Updated positions for player {id}: {string.Join(", ", positions)}");
+        }
+        else if (msg.StartsWith("CreatureType:"))
+        {
+            var parts = msg.Substring("CreatureType:".Length).Split(':');
+            var playerId = int.Parse(parts[0]);
+            var creatureType = parts[1];
+            playerCreatures[playerId] = creatureType;
+            BroadcastCreatureType(playerId, creatureType);
+            Console.WriteLine($"[Server] Player {playerId} selected creature: {creatureType}");
         }
     }
-
-    clients.Remove(client);
-    playerPositions.Remove(playerId);
-    playerCreatures.Remove(playerId);
-    Console.WriteLine($"[Server] Client {playerId} disconnected.");
 }
-
         private static async Task BroadcastGameStateLoop()
         {
             while (true)
             {
                 BroadcastGameState();
-                await Task.Delay(33); // Broadcast every 100ms
+                await Task.Delay(50); // Broadcast every 50ms
             }
         }
-
-        private static void BroadcastCreatureType(int playerId, string creatureType)
-{
-    var message = $"PlayerCreature:{playerId}:{creatureType}{messageDelimiter}";
-    BroadcastMessage(message);
-}
-
-private static void BroadcastMessage(string message)
-{
-    byte[] data = Encoding.ASCII.GetBytes(message);
-    foreach (var client in clients)
-    {
-        var stream = client.GetStream();
-        try
-        {
-            stream.Write(data, 0, data.Length);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error broadcasting to client: {ex.Message}");
-        }
-    }
-}
 
         private static void BroadcastGameState()
         {
@@ -147,13 +112,23 @@ private static void BroadcastMessage(string message)
                 gameStateMessage.Append(messageDelimiter);
             }
 
+            BroadcastMessage(gameStateMessage.ToString());
+        }
+
+        private static void BroadcastCreatureType(int playerId, string creatureType)
+        {
+            var message = $"PlayerCreature:{playerId}:{creatureType}{messageDelimiter}";
+            BroadcastMessage(message);
+        }
+
+        private static void BroadcastMessage(string message)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(message);
             foreach (var client in clients)
             {
-                var stream = client.GetStream();
-                byte[] data = Encoding.ASCII.GetBytes(gameStateMessage.ToString());
                 try
                 {
-                    stream.Write(data, 0, data.Length);
+                    udpServer.Send(data, data.Length, client);
                 }
                 catch (Exception ex)
                 {
@@ -162,12 +137,11 @@ private static void BroadcastMessage(string message)
             }
         }
 
-      private static async Task SendDataToClient(TcpClient client, string message)
-{
-    byte[] data = Encoding.ASCII.GetBytes(message);
-    var stream = client.GetStream();
-    await stream.WriteAsync(data, 0, data.Length);
-}
+        private static async Task SendDataToClient(IPEndPoint clientEndPoint, string message)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(message);
+            await udpServer.SendAsync(data, data.Length, clientEndPoint);
+        }
     }
 
     public struct Vector2

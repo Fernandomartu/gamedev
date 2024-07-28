@@ -6,82 +6,36 @@ using System.Threading.Tasks;
 
 public class NetworkManager
 {
-    private TcpClient client;
-    private TcpListener server;
-    private NetworkStream stream;
-    private byte[] buffer;
-
-    public bool IsServer { get; private set; }
-    public bool IsConnected { get; private set; }
-
+    private UdpClient udpClient;
+    private IPEndPoint serverEndPoint;
     public event Action<string> OnMessageReceived;
 
-    public async Task StartServer(int port)
+    public Task ConnectToServer(string ip, int port)
     {
-        server = new TcpListener(IPAddress.Any, port);
-        server.Start();
-        IsServer = true;
-
-        Console.WriteLine("Server started. Waiting for connection...");
-        client = await server.AcceptTcpClientAsync();
-        stream = client.GetStream();
-        buffer = new byte[1024];
-        IsConnected = true;
-
-        Console.WriteLine("Client connected.");
-        _ = Task.Run(() => ReceiveData());
+        udpClient = new UdpClient();
+        serverEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+        _ = ListenForMessages();  // No need for await here
+        return Task.CompletedTask;
     }
 
-    public async Task ConnectToServer(string ip, int port)
+    public Task SendData(string message)
     {
-        client = new TcpClient();
-        await client.ConnectAsync(ip, port);
-        stream = client.GetStream();
-        buffer = new byte[1024];
-        IsConnected = true;
-
-        Console.WriteLine("Connected to server.");
-        _ = Task.Run(() => ReceiveData());
+        byte[] data = Encoding.ASCII.GetBytes(message);
+        return udpClient.SendAsync(data, data.Length, serverEndPoint);  // Directly return the Task
     }
 
-    public async Task SendData(string message)
+    private async Task ListenForMessages()
     {
-        if (IsConnected)
+        while (true)
         {
-            byte[] data = Encoding.ASCII.GetBytes(message);
-            await stream.WriteAsync(data, 0, data.Length);
-        }
-    }
-
-    private async Task ReceiveData()
-    {
-        while (IsConnected)
-        {
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            if (bytesRead > 0)
-            {
-                string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                Console.WriteLine("Received: " + message);
-                OnMessageReceived?.Invoke(message);
-            }
+            var result = await udpClient.ReceiveAsync();
+            var message = Encoding.ASCII.GetString(result.Buffer);
+            OnMessageReceived?.Invoke(message);
         }
     }
 
     public void Disconnect()
     {
-        if (IsConnected)
-        {
-            stream.Close();
-            client.Close();
-            IsConnected = false;
-
-            if (IsServer)
-            {
-                server.Stop();
-                IsServer = false;
-            }
-
-            Console.WriteLine("Disconnected.");
-        }
+        udpClient.Close();
     }
 }
