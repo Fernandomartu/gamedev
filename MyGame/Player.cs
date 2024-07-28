@@ -46,5 +46,10 @@ namespace SimpleGame
 {
     return ControlledCreature.GetAllPositions();
 }
+
+   public void ChangeCreature(Creature newCreature)
+        {
+            ControlledCreature = newCreature;
+        }
     }
 }

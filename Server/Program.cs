@@ -16,6 +16,8 @@ namespace GameServer
         private static byte[] buffer = new byte[1024];
         private static string messageDelimiter = "\n";
 
+        private static Dictionary<int, string> playerCreatures = new Dictionary<int, string>();
+
         public static async Task Main(string[] args)
         {
             int port = 12345;
@@ -38,7 +40,7 @@ namespace GameServer
             }
         }
 
-     private static async Task HandleClient(TcpClient client, int playerId)
+   private static async Task HandleClient(TcpClient client, int playerId)
 {
     var stream = client.GetStream();
     var data = new StringBuilder();
@@ -77,6 +79,8 @@ namespace GameServer
                     else if (message.StartsWith("CreatureType:"))
                     {
                         selectedCreatureType = message.Substring("CreatureType:".Length);
+                        playerCreatures[playerId] = selectedCreatureType;
+                        BroadcastCreatureType(playerId, selectedCreatureType);
                         Console.WriteLine($"[Server] Player {playerId} selected creature: {selectedCreatureType}");
                     }
                 }
@@ -94,6 +98,7 @@ namespace GameServer
 
     clients.Remove(client);
     playerPositions.Remove(playerId);
+    playerCreatures.Remove(playerId);
     Console.WriteLine($"[Server] Client {playerId} disconnected.");
 }
 
@@ -105,6 +110,29 @@ namespace GameServer
                 await Task.Delay(50); // Broadcast every 100ms
             }
         }
+
+        private static void BroadcastCreatureType(int playerId, string creatureType)
+{
+    var message = $"PlayerCreature:{playerId}:{creatureType}{messageDelimiter}";
+    BroadcastMessage(message);
+}
+
+private static void BroadcastMessage(string message)
+{
+    byte[] data = Encoding.ASCII.GetBytes(message);
+    foreach (var client in clients)
+    {
+        var stream = client.GetStream();
+        try
+        {
+            stream.Write(data, 0, data.Length);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error broadcasting to client: {ex.Message}");
+        }
+    }
+}
 
         private static void BroadcastGameState()
         {

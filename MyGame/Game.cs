@@ -158,60 +158,82 @@ namespace SimpleGame
             await networkManager.SendData($"CreatureType:{creatureType}{messageDelimiter}");
         }
 
-        private void HandleMessageReceived(string message)
+       private void HandleMessageReceived(string message)
+{
+    try
+    {
+        var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var msg in messages)
         {
-            try
+            if (msg.StartsWith("PlayerId:"))
             {
-                var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var msg in messages)
+                playerId = int.Parse(msg.Substring("PlayerId:".Length));
+                playerIdAssigned = true;
+
+                Vector2 playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2 + (playerId * 20), GraphicsDevice.Viewport.Height / 2);
+
+                var playerCreature = CreateCreature(creatureOptions[selectedOption], GraphicsDevice, playerStartPosition);
+                var player = new Player(playerCreature);
+                playersDict[playerId] = player;
+
+                Console.WriteLine($"[Client] Assigned PlayerId: {playerId}, Start Position: {playerStartPosition}");
+            }
+            else if (msg.StartsWith("PlayerPositions:"))
+            {
+                var parts = msg.Substring("PlayerPositions:".Length).Split(':');
+                var id = int.Parse(parts[0]);
+                var positions = new List<Vector2>();
+
+                for (int i = 1; i < parts.Length; i++)
                 {
-                    if (msg.StartsWith("PlayerId:"))
-                    {
-                        playerId = int.Parse(msg.Substring("PlayerId:".Length));
-                        playerIdAssigned = true;
+                    var positionParts = parts[i].Split(',');
+                    var x = float.Parse(positionParts[0]);
+                    var y = float.Parse(positionParts[1]);
+                    positions.Add(new Vector2(x, y));
+                }
 
-                        Vector2 playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2 + (playerId * 20), GraphicsDevice.Viewport.Height / 2);
-
-                        var playerCreature = CreateCreature(creatureOptions[selectedOption], GraphicsDevice, playerStartPosition);
-                        var player = new Player(playerCreature);
-                        playersDict[playerId] = player;
-
-                        Console.WriteLine($"[Client] Assigned PlayerId: {playerId}, Start Position: {playerStartPosition}");
-                    }
-                    else if (msg.StartsWith("PlayerPositions:"))
-                    {
-                        var parts = msg.Substring("PlayerPositions:".Length).Split(':');
-                        var id = int.Parse(parts[0]);
-                        var positions = new List<Vector2>();
-
-                        for (int i = 1; i < parts.Length; i++)
-                        {
-                            var positionParts = parts[i].Split(',');
-                            var x = float.Parse(positionParts[0]);
-                            var y = float.Parse(positionParts[1]);
-                            positions.Add(new Vector2(x, y));
-                        }
-
-                        if (!playersDict.ContainsKey(id))
-                        {
-                            var playerCreature = CreateCreature(creatureOptions[selectedOption], GraphicsDevice, positions[0]);
-                            var player = new Player(playerCreature);
-                            playersDict[id] = player;
-                            Console.WriteLine($"[Client] Added new player with ID: {id} at starting position {positions[0]}");
-                        }
-                        else
-                        {
-                            playersDict[id].ControlledCreature.SetAllPositions(positions);
-                            Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
-                        }
-                    }
+                if (!playersDict.ContainsKey(id))
+                {
+                    var playerCreature = CreateCreature("Lizard", GraphicsDevice, positions[0]);
+                    var player = new Player(playerCreature);
+                    playersDict[id] = player;
+                    Console.WriteLine($"[Client] Added new player with ID: {id} at starting position {positions[0]}");
+                }
+                else
+                {
+                    playersDict[id].ControlledCreature.SetAllPositions(positions);
+                    Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
                 }
             }
-            catch (Exception ex)
+            else if (msg.StartsWith("PlayerCreature:"))
             {
-                Console.WriteLine($"[Client] Error in HandleMessageReceived: {ex.Message}");
+                var parts = msg.Substring("PlayerCreature:".Length).Split(':');
+                var id = int.Parse(parts[0]);
+                var creatureType = parts[1];
+
+                if (!playersDict.ContainsKey(id))
+                {
+                    var playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2 + (id * 20), GraphicsDevice.Viewport.Height / 2);
+                    var playerCreature = CreateCreature(creatureType, GraphicsDevice, playerStartPosition);
+                    var player = new Player(playerCreature);
+                    playersDict[id] = player;
+                    Console.WriteLine($"[Client] Added new player with ID: {id}, Creature: {creatureType}");
+                }
+                else
+                {
+                    var player = playersDict[id];
+                    var newCreature = CreateCreature(creatureType, GraphicsDevice, player.ControlledCreature.HeadPosition);
+                    player.ChangeCreature(newCreature);
+                    Console.WriteLine($"[Client] Updated player {id} to Creature: {creatureType}");
+                }
             }
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Client] Error in HandleMessageReceived: {ex.Message}");
+    }
+}
 
         private Creature CreateCreature(string creatureType, GraphicsDevice graphicsDevice, Vector2 startPosition)
         {
