@@ -142,11 +142,11 @@ namespace SimpleGame
                     playersDict[id] = player;
                     Console.WriteLine($"[Client] Added new player with ID: {id} at starting position {positions[0]}");
                 }
-                else if (id != playerId)
-            {
-                playersDict[id].ControlledCreature.SetAllPositions(positions);
-                Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
-            }
+                else
+                {
+                    playersDict[id].ControlledCreature.SetAllPositions(positions);
+                    Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
+                }
             }
         }
     }
