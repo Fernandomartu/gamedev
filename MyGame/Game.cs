@@ -97,7 +97,7 @@ namespace SimpleGame
         private async void StartMultiplayer()
         {
             int port = 12345;
-            string ip = "127.0.0.1"; // Change to your server's IP address
+            string ip = "192.168.1.153"; // Change to your server's IP address
 
             await networkManager.ConnectToServer(ip, port);
         }
