@@ -164,4 +164,29 @@ public void SetAllPositions(List<Vector2> newPositions)
             UpdatePositions(MathHelper.ToRadians(40f), gameTime);
         }
     }
+
+public class Frog : Creature
+    {
+        public Frog(GraphicsDevice graphicsDevice, Vector2 startPosition)
+            : base(graphicsDevice, 4, 25, 180f, startPosition, Color.Blue)
+        {
+        }
+
+        public override void Update(GameTime gameTime, Vector2 targetPosition)
+        {
+            if (float.IsNaN(targetPosition.X) || float.IsNaN(targetPosition.Y))
+            {
+                targetPosition = HeadPosition;
+            }
+
+            Vector2 direction = targetPosition - circlePositions[0];
+            direction.Normalize();
+
+            circlePositions[0] += direction * circleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            UpdatePositions(MathHelper.ToRadians(50f), gameTime);
+        }
+    }
 }
+
+

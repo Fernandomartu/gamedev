@@ -38,10 +38,11 @@ namespace GameServer
             }
         }
 
-        private static async Task HandleClient(TcpClient client, int playerId)
+     private static async Task HandleClient(TcpClient client, int playerId)
 {
     var stream = client.GetStream();
     var data = new StringBuilder();
+    string selectedCreatureType = "Lizard"; // Default type
 
     while (client.Connected)
     {
@@ -73,6 +74,11 @@ namespace GameServer
                         playerPositions[id] = positions; // Store the list of positions
                         Console.WriteLine($"[Server] Updated positions for player {id}: {string.Join(", ", positions)}");
                     }
+                    else if (message.StartsWith("CreatureType:"))
+                    {
+                        selectedCreatureType = message.Substring("CreatureType:".Length);
+                        Console.WriteLine($"[Server] Player {playerId} selected creature: {selectedCreatureType}");
+                    }
                 }
 
                 // Clear the data buffer
@@ -85,6 +91,7 @@ namespace GameServer
             break;
         }
     }
+
     clients.Remove(client);
     playerPositions.Remove(playerId);
     Console.WriteLine($"[Server] Client {playerId} disconnected.");
@@ -127,12 +134,12 @@ namespace GameServer
             }
         }
 
-        private static async Task SendDataToClient(TcpClient client, string message)
-        {
-            byte[] data = Encoding.ASCII.GetBytes(message);
-            var stream = client.GetStream();
-            await stream.WriteAsync(data, 0, data.Length);
-        }
+      private static async Task SendDataToClient(TcpClient client, string message)
+{
+    byte[] data = Encoding.ASCII.GetBytes(message);
+    var stream = client.GetStream();
+    await stream.WriteAsync(data, 0, data.Length);
+}
     }
 
     public struct Vector2
