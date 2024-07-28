@@ -1,27 +1,54 @@
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.exe
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.deps.json
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.runtimeconfig.json
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MyGame.pdb
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\LiteNetLib.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\MonoGame.Framework.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\linux-x64\native\libSDL2-2.0.so.0
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\linux-x64\native\libopenal.so.1
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\osx\native\libSDL2.dylib
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\osx\native\libopenal.1.dylib
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\win-x64\native\SDL2.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\win-x64\native\soft_oal.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\win-x86\native\SDL2.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\bin\Debug\net6.0\runtimes\win-x86\native\soft_oal.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.csproj.AssemblyReference.cache
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.AssemblyInfoInputs.cache
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.AssemblyInfo.cs
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.csproj.CoreCompileInputs.cache
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.sourcelink.json
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.csproj.Up2Date
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\refint\MyGame.dll
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.pdb
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\MyGame.genruntimeconfig.cache
-C:\Users\Admin\OneDrive\Documents\work projects\gamedev\MyGame\obj\Debug\net6.0\ref\MyGame.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MyGame.exe
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MyGame.deps.json
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MyGame.runtimeconfig.json
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MyGame.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MyGame.pdb
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/LiteNetLib.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/MonoGame.Framework.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/linux-x64/native/libSDL2-2.0.so.0
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/linux-x64/native/libopenal.so.1
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/osx/native/libSDL2.dylib
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/osx/native/libopenal.1.dylib
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x64/native/SDL2.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x64/native/soft_oal.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x86/native/SDL2.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x86/native/soft_oal.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.AssemblyReference.cache
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.GeneratedMSBuildEditorConfig.editorconfig
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.AssemblyInfoInputs.cache
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.AssemblyInfo.cs
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.CoreCompileInputs.cache
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.sourcelink.json
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.Up2Date
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/refint/MyGame.dll
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.pdb
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/MyGame.genruntimeconfig.cache
+C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/obj/Debug/net6.0/ref/MyGame.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MyGame
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MyGame.deps.json
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MyGame.runtimeconfig.json
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MyGame.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MyGame.pdb
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/LiteNetLib.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/MonoGame.Framework.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/linux-x64/native/libSDL2-2.0.so.0
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/linux-x64/native/libopenal.so.1
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/osx/native/libSDL2.dylib
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/osx/native/libopenal.1.dylib
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x64/native/SDL2.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x64/native/soft_oal.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x86/native/SDL2.dll
+/Users/excelalarosa/gamedev/MyGame/bin/Debug/net6.0/runtimes/win-x86/native/soft_oal.dll
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.AssemblyReference.cache
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.GeneratedMSBuildEditorConfig.editorconfig
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.AssemblyInfoInputs.cache
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.AssemblyInfo.cs
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.CoreCompileInputs.cache
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.sourcelink.json
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.csproj.Up2Date
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.dll
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/refint/MyGame.dll
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.pdb
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/MyGame.genruntimeconfig.cache
+/Users/excelalarosa/gamedev/MyGame/obj/Debug/net6.0/ref/MyGame.dll

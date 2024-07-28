@@ -754,19 +754,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Admin\\.nuget\\packages\\": {}
+    "/Users/excelalarosa/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\MyGame\\MyGame.csproj",
+      "projectUniqueName": "/Users/excelalarosa/gamedev/MyGame/MyGame.csproj",
       "projectName": "MyGame",
-      "projectPath": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\MyGame\\MyGame.csproj",
-      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\MyGame\\obj\\",
+      "projectPath": "/Users/excelalarosa/gamedev/MyGame/MyGame.csproj",
+      "packagesPath": "/Users/excelalarosa/.nuget/packages/",
+      "outputPath": "/Users/excelalarosa/gamedev/MyGame/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/excelalarosa/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
@@ -826,19 +826,15 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.29, 6.0.29]"
+            "version": "[6.0.32, 6.0.32]"
           },
           {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[6.0.29, 6.0.29]"
+            "name": "Microsoft.NETCore.App.Host.osx-x64",
+            "version": "[6.0.32, 6.0.32]"
           },
           {
             "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.29, 6.0.29]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.29, 6.0.29]"
+            "version": "[6.0.32, 6.0.32]"
           }
         ],
         "frameworkReferences": {
@@ -846,7 +842,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.303/RuntimeIdentifierGraph.json"
       }
     }
   }

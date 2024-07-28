@@ -32,6 +32,22 @@ namespace SimpleGame
             circleTexture = CreateCircleTexture(graphicsDevice, circleRadius, color);
         }
 
+        public List<Vector2> GetAllPositions()
+{
+    return new List<Vector2>(circlePositions);
+}
+
+public void SetAllPositions(List<Vector2> newPositions)
+{
+    if (newPositions.Count == circlePositions.Count)
+    {
+        for (int i = 0; i < newPositions.Count; i++)
+        {
+            circlePositions[i] = newPositions[i];
+        }
+    }
+}
+
         private Texture2D CreateCircleTexture(GraphicsDevice device, int radius, Color color)
         {
             int diameter = radius * 2;

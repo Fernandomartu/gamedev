@@ -40,32 +40,38 @@ namespace SimpleGame
         }
 
         protected override void Update(GameTime gameTime)
+{
+    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        Exit();
+
+    try
+    {
+        if (playerIdAssigned)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            try
+            if (playersDict.ContainsKey(playerId))
             {
-                if (playerIdAssigned)
+                var player = playersDict[playerId];
+                player.Update(gameTime);
+
+                // Send positions of all body parts to the server
+                var positions = player.ControlledCreature.GetAllPositions();
+                var message = $"PlayerPositions:{playerId}";
+                foreach (var position in positions)
                 {
-                    if (playersDict.ContainsKey(playerId))
-                    {
-                        var player = playersDict[playerId];
-                        player.Update(gameTime);
-                        // Send player position to the server
-                        var position = player.ControlledCreature.HeadPosition;
-                        var message = $"PlayerPosition:{playerId}:{position.X},{position.Y}{messageDelimiter}";
-                        _ = networkManager.SendData(message);
-                    }
+                    message += $":{position.X},{position.Y}";
                 }
+                message += messageDelimiter;
+                _ = networkManager.SendData(message);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in Update: {ex.Message}");
-            }
-
-            base.Update(gameTime);
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error in Update: {ex.Message}");
+    }
+
+    base.Update(gameTime);
+}
 
         protected override void Draw(GameTime gameTime)
         {
@@ -97,57 +103,58 @@ namespace SimpleGame
         }
 
         private void HandleMessageReceived(string message)
+{
+    try
+    {
+        var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var msg in messages)
         {
-            try
+            if (msg.StartsWith("PlayerId:"))
             {
-                var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var msg in messages)
+                playerId = int.Parse(msg.Substring("PlayerId:".Length));
+                playerIdAssigned = true;
+
+                Vector2 playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2 + (playerId * 20), GraphicsDevice.Viewport.Height / 2);
+                var playerLizard = new Lizard(GraphicsDevice, playerStartPosition);
+                var player = new Player(playerLizard);
+                playersDict[playerId] = player;
+
+                Console.WriteLine($"[Client] Assigned PlayerId: {playerId}, Start Position: {playerStartPosition}");
+            }
+            else if (msg.StartsWith("PlayerPositions:"))
+            {
+                var parts = msg.Substring("PlayerPositions:".Length).Split(':');
+                var id = int.Parse(parts[0]);
+                var positions = new List<Vector2>();
+
+                for (int i = 1; i < parts.Length; i++)
                 {
-                    if (msg.StartsWith("PlayerId:"))
-                    {
-                        playerId = int.Parse(msg.Substring("PlayerId:".Length));
-                        playerIdAssigned = true;
+                    var positionParts = parts[i].Split(',');
+                    var x = float.Parse(positionParts[0]);
+                    var y = float.Parse(positionParts[1]);
+                    positions.Add(new Vector2(x, y));
+                }
 
-                        Vector2 playerStartPosition = new Vector2(GraphicsDevice.Viewport.Width / 2 + (playerId * 20), GraphicsDevice.Viewport.Height / 2);
-                        var playerLizard = new Lizard(GraphicsDevice, playerStartPosition);
-                        var player = new Player(playerLizard);
-                        playersDict[playerId] = player;
-
-                        Console.WriteLine($"Assigned PlayerId: {playerId}, Start Position: {playerStartPosition}");
-                    }
-                    else if (msg.StartsWith("PlayerPosition:"))
-                    {
-                        var positions = msg.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var positionMessage in positions)
-                        {
-                            var parts = positionMessage.Substring("PlayerPosition:".Length).Split(':');
-                            var id = int.Parse(parts[0]);
-                            var positionParts = parts[1].Split(',');
-                            var x = float.Parse(positionParts[0]);
-                            var y = float.Parse(positionParts[1]);
-                            Vector2 position = new Vector2(x, y);
-
-                            if (!playersDict.ContainsKey(id))
-                            {
-                                var snake = new Snake(GraphicsDevice, position);
-                                var player = new Player(snake);
-                                playersDict[id] = player;
-                                Console.WriteLine($"Added new player with ID: {id} at position {position}");
-                            }
-                            else
-                            {
-                                playersDict[id].ControlledCreature.SetPosition(position);
-                                Console.WriteLine($"Updated position for player {id} to {position}");
-                            }
-                        }
-                    }
+                if (!playersDict.ContainsKey(id))
+                {
+                    var lizard = new Lizard(GraphicsDevice, positions[0]);
+                    var player = new Player(lizard);
+                    playersDict[id] = player;
+                    Console.WriteLine($"[Client] Added new player with ID: {id} at starting position {positions[0]}");
+                }
+                else
+                {
+                    playersDict[id].ControlledCreature.SetAllPositions(positions);
+                    Console.WriteLine($"[Client] Updated positions for player {id}: {string.Join(", ", positions)}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in HandleMessageReceived: {ex.Message}");
-            }
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Client] Error in HandleMessageReceived: {ex.Message}");
+    }
+}
 
         protected override void UnloadContent()
         {

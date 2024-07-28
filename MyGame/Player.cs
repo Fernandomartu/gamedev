@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace SimpleGame
 {
@@ -40,5 +41,10 @@ namespace SimpleGame
         {
             ControlledCreature.Draw(spriteBatch);
         }
+
+        public List<Vector2> GetAllPositions()
+{
+    return ControlledCreature.GetAllPositions();
+}
     }
 }

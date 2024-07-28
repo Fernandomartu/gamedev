@@ -11,7 +11,7 @@ namespace GameServer
     {
         private static TcpListener server;
         private static List<TcpClient> clients = new List<TcpClient>();
-        private static Dictionary<int, Vector2> playerPositions = new Dictionary<int, Vector2>();
+        private static Dictionary<int, List<Vector2>> playerPositions = new Dictionary<int, List<Vector2>>();
         private static int nextPlayerId = 1;
         private static byte[] buffer = new byte[1024];
         private static string messageDelimiter = "\n";
@@ -32,62 +32,70 @@ namespace GameServer
                 Console.WriteLine("Client connected.");
                 int playerId = nextPlayerId++;
                 await SendDataToClient(client, $"PlayerId:{playerId}{messageDelimiter}");
-                playerPositions[playerId] = new Vector2(400 + (playerId * 20), 240);
+                var initialPosition = new Vector2(400 + (playerId * 20), 240);
+                playerPositions[playerId] = new List<Vector2> { initialPosition }; // Initialize with the head position
                 _ = Task.Run(() => HandleClient(client, playerId));
             }
         }
 
         private static async Task HandleClient(TcpClient client, int playerId)
+{
+    var stream = client.GetStream();
+    var data = new StringBuilder();
+
+    while (client.Connected)
+    {
+        try
         {
-            var stream = client.GetStream();
-            var data = new StringBuilder();
-
-            while (client.Connected)
+            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            if (bytesRead > 0)
             {
-                try
-                {
-                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
-                    {
-                        data.Append(Encoding.ASCII.GetString(buffer, 0, bytesRead));
-                        var messages = data.ToString().Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+                data.Append(Encoding.ASCII.GetString(buffer, 0, bytesRead));
+                var messages = data.ToString().Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
 
-                        foreach (var message in messages)
+                foreach (var message in messages)
+                {
+                    Console.WriteLine($"[Server] Received: {message}");
+                    if (message.StartsWith("PlayerPositions:"))
+                    {
+                        var parts = message.Substring("PlayerPositions:".Length).Split(':');
+                        var id = int.Parse(parts[0]);
+                        var positions = new List<Vector2>();
+
+                        for (int i = 1; i < parts.Length; i++)
                         {
-                            Console.WriteLine($"Received: {message}");
-                            if (message.StartsWith("PlayerPosition:"))
-                            {
-                                var parts = message.Substring("PlayerPosition:".Length).Split(':');
-                                var id = int.Parse(parts[0]);
-                                var positionParts = parts[1].Split(',');
-                                var x = float.Parse(positionParts[0]);
-                                var y = float.Parse(positionParts[1]);
-                                Vector2 position = new Vector2(x, y);
-                                playerPositions[id] = position;
-                            }
+                            var positionParts = parts[i].Split(',');
+                            float x = float.Parse(positionParts[0]);
+                            float y = float.Parse(positionParts[1]);
+                            positions.Add(new Vector2(x, y));
                         }
 
-                        // Clear the data buffer
-                        data.Clear();
+                        playerPositions[id] = positions; // Store the list of positions
+                        Console.WriteLine($"[Server] Updated positions for player {id}: {string.Join(", ", positions)}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error handling client {playerId}: {ex.Message}");
-                    break;
-                }
+
+                // Clear the data buffer
+                data.Clear();
             }
-            clients.Remove(client);
-            playerPositions.Remove(playerId);
-            Console.WriteLine("Client disconnected.");
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Server] Error handling client {playerId}: {ex.Message}");
+            break;
+        }
+    }
+    clients.Remove(client);
+    playerPositions.Remove(playerId);
+    Console.WriteLine($"[Server] Client {playerId} disconnected.");
+}
 
         private static async Task BroadcastGameStateLoop()
         {
             while (true)
             {
                 BroadcastGameState();
-                await Task.Delay(100); // Broadcast every 100ms
+                await Task.Delay(30); // Broadcast every 100ms
             }
         }
 
@@ -96,7 +104,12 @@ namespace GameServer
             var gameStateMessage = new StringBuilder();
             foreach (var player in playerPositions)
             {
-                gameStateMessage.Append($"PlayerPosition:{player.Key}:{player.Value.X},{player.Value.Y}{messageDelimiter}");
+                gameStateMessage.Append($"PlayerPositions:{player.Key}");
+                foreach (var position in player.Value)
+                {
+                    gameStateMessage.Append($":{position.X},{position.Y}");
+                }
+                gameStateMessage.Append(messageDelimiter);
             }
 
             foreach (var client in clients)

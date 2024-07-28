@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\Server\\Server.csproj": {}
+    "/Users/excelalarosa/gamedev/Server/Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\Server\\Server.csproj": {
+    "/Users/excelalarosa/gamedev/Server/Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\Server\\Server.csproj",
+        "projectUniqueName": "/Users/excelalarosa/gamedev/Server/Server.csproj",
         "projectName": "Server",
-        "projectPath": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\Server\\Server.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\OneDrive\\Documents\\work projects\\gamedev\\Server\\obj\\",
+        "projectPath": "/Users/excelalarosa/gamedev/Server/Server.csproj",
+        "packagesPath": "/Users/excelalarosa/.nuget/packages/",
+        "outputPath": "/Users/excelalarosa/gamedev/Server/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/excelalarosa/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -58,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
