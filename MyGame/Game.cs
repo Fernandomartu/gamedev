@@ -51,7 +51,7 @@ namespace SimpleGame
             if (playersDict.ContainsKey(playerId))
             {
                 var player = playersDict[playerId];
-                player.Update(gameTime);
+                
 
                 // Send positions of all body parts to the server
                 var positions = player.ControlledCreature.GetAllPositions();
