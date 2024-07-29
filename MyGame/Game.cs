@@ -40,110 +40,105 @@ namespace SimpleGame
             playersDict = new Dictionary<int, Player>();
 
             gameState = GameState.Menu;
-            creatureOptions = new List<string> { "Lizard", "Frog", "Snake" };
+            creatureOptions = new List<string> { "Lizard", "Snake" };
             selectedOption = 0;
         }
 
-protected override void LoadContent()
-{
-    spriteBatch = new SpriteBatch(GraphicsDevice);
-    menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
-    Log.Information("Content loaded.");
-}
+        protected override void LoadContent()
+        {
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
+            Log.Information("Content loaded.");
+        }
 
-protected override void Initialize()
-{
-    base.Initialize();
-    messageHandler = new MessageHandler(this, playersDict, GraphicsDevice, creatureOptions, selectedOption);
-    Log.Information("Game initialized.");
-}
-  
+        protected override void Initialize()
+        {
+            base.Initialize();
+            messageHandler = new MessageHandler(this, playersDict, GraphicsDevice, creatureOptions, selectedOption);
+            Log.Information("Game initialized.");
+        }
 
         protected override void Update(GameTime gameTime)
-{
-    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-        Exit();
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
-    var keyboardState = Keyboard.GetState();
+            var keyboardState = Keyboard.GetState();
 
-    if (gameState == GameState.Menu)
-    {
-        if (keyboardState.IsKeyDown(Keys.Up))
-        {
-            selectedOption = (selectedOption > 0) ? selectedOption - 1 : creatureOptions.Count - 1;
-        }
-        else if (keyboardState.IsKeyDown(Keys.Down))
-        {
-            selectedOption = (selectedOption < creatureOptions.Count - 1) ? selectedOption + 1 : 0;
-        }
-        else if (keyboardState.IsKeyDown(Keys.Enter))
-        {
-            string selectedCreature = creatureOptions[selectedOption];
-            StartMultiplayer(selectedCreature);
-            gameState = GameState.Playing;
-        }
-    }
-    else if (gameState == GameState.Playing)
-    {
-        try
-        {
-            if (playerIdAssigned)
+            if (gameState == GameState.Menu)
             {
-                if (playersDict.ContainsKey(playerId))
+                if (keyboardState.IsKeyDown(Keys.Up))
                 {
-                    var player = playersDict[playerId];
-                    player.Update(gameTime);
-
-                    // Send positions of all body parts to the server
-                    var positions = player.GetAllPositions();
-                    var message = $"PlayerPositions:{playerId}";
-                    foreach (var position in positions)
-                    {
-                        message += $":{position.X},{position.Y}";
-                    }
-                    message += messageDelimiter;
-                    _ = networkManager.SendData(message);
-                    Log.Information("Sent player positions to server: {Message}", message);
+                    selectedOption = (selectedOption > 0) ? selectedOption - 1 : creatureOptions.Count - 1;
+                }
+                else if (keyboardState.IsKeyDown(Keys.Down))
+                {
+                    selectedOption = (selectedOption < creatureOptions.Count - 1) ? selectedOption + 1 : 0;
+                }
+                else if (keyboardState.IsKeyDown(Keys.Enter))
+                {
+                    string selectedCreature = creatureOptions[selectedOption];
+                    StartMultiplayer(selectedCreature);
+                    gameState = GameState.Playing;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error in Update");
-        }
-    }
-
-    base.Update(gameTime);
-}
-
-     protected override void Draw(GameTime gameTime)
-{
-    GraphicsDevice.Clear(Color.CornflowerBlue);
-
-    spriteBatch.Begin();
-    try
-    {
-        if (gameState == GameState.Menu)
-        {
-            DrawMenu();
-        }
-        else if (gameState == GameState.Playing)
-        {
-            foreach (var player in playersDict.Values)
+            else if (gameState == GameState.Playing)
             {
-                player.Draw(spriteBatch);
-                Log.Information("Drawing player with head position: {HeadPosition}", player.ControlledCreature.HeadPosition);
-            }
-        }
-    }
-    catch (Exception ex)
-    {
-        Log.Error(ex, "Error in Draw");
-    }
-    spriteBatch.End();
+                try
+                {
+                    if (playerIdAssigned)
+                    {
+                        if (playersDict.ContainsKey(playerId))
+                        {
+                            var player = playersDict[playerId];
+                            player.Update(gameTime);
 
-    base.Draw(gameTime);
-}
+                            // Send positions of all body parts to the server
+                            var positions = player.GetAllPositions();
+                            var message = $"PlayerPositions:{playerId}";
+                            foreach (var position in positions)
+                            {
+                                message += $":{position.X},{position.Y}";
+                            }
+                            message += messageDelimiter;
+                            _ = networkManager.SendData(message);
+                            Log.Information("Sent player positions to server: {Message}", message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error in Update");
+                }
+            }
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            spriteBatch.Begin();
+            try
+            {
+                if (gameState == GameState.Menu)
+                {
+                    DrawMenu();
+                }
+                else if (gameState == GameState.Playing)
+                {
+                    DrawCreatures(spriteBatch, playersDict.Values);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error in Draw");
+            }
+            spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
 
         private void DrawMenu()
         {
@@ -157,27 +152,38 @@ protected override void Initialize()
             }
         }
 
-    private async void StartMultiplayer(string creatureType)
-{
-    int port = 12345;
-    string ip = "192.168.1.153"; // Change to your server's IP address
+        private void DrawCreatures(SpriteBatch spriteBatch, IEnumerable<Player> players)
+        {
+            foreach (var player in players)
+            {
+                foreach (var part in player.ControlledCreature.bodyParts)
+                {
+                    part.Draw(spriteBatch);
+                }
+            }
+        }
 
-    Log.Information("Starting multiplayer...");
-    await networkManager.StartClient(ip, port);
-    Log.Information("Sending creature type to server...");
-    await networkManager.SendData($"CreatureType:{creatureType}{messageDelimiter}");
-}
+        private async void StartMultiplayer(string creatureType)
+        {
+            int port = 12345;
+            string ip = "192.168.1.153"; // Change to your server's IP address
+
+            Log.Information("Starting multiplayer...");
+            await networkManager.StartClient(ip, port);
+            Log.Information("Sending creature type to server...");
+            await networkManager.SendData($"CreatureType:{creatureType}{messageDelimiter}");
+        }
 
         private void HandleMessageReceived(string message)
         {
             messageHandler.HandleMessageReceived(message);
         }
 
-      protected override void UnloadContent()
-{
-    networkManager.Disconnect();
-    base.UnloadContent();
-    Log.Information("Content unloaded.");
-}
+        protected override void UnloadContent()
+        {
+            networkManager.Disconnect();
+            base.UnloadContent();
+            Log.Information("Content unloaded.");
+        }
     }
 }

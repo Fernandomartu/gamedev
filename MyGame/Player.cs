@@ -33,23 +33,18 @@ namespace SimpleGame
                 movement.Normalize();
                 Vector2 targetPosition = ControlledCreature.HeadPosition + movement * ControlledCreature.CircleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
                 ControlledCreature.Update(gameTime, targetPosition);
-                
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public List<Vector2> GetAllPositions()
         {
-            ControlledCreature.Draw(spriteBatch);
+            return ControlledCreature.GetAllPositions();
         }
 
-        public List<Vector2> GetAllPositions()
-{
-    return ControlledCreature.GetAllPositions();
-}
-
-   public void ChangeCreature(Creature newCreature)
+        public void ChangeCreature(Creature newCreature)
         {
             ControlledCreature = newCreature;
         }
     }
+    
 }
