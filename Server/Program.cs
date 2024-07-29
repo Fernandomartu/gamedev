@@ -49,6 +49,9 @@ namespace GameServer
                         var initialPosition = new Vector2(400 + (newPlayerId * 20), 240);
                         playerPositions[newPlayerId] = new List<Vector2> { initialPosition };
                         Log.Information("Client connected with PlayerId: {PlayerId}", newPlayerId);
+
+                        // Send current state to new client
+                        await SendCurrentStateToClient(clientEndpoint);
                     }
 
                     var playerId = clients[clientEndpoint];
@@ -148,6 +151,26 @@ namespace GameServer
                 server.SendAsync(data, data.Length, client);
             }
             Log.Information("Broadcasted game state: {GameStateMessage}", gameStateMessage);
+        }
+
+        private static async Task SendCurrentStateToClient(IPEndPoint clientEndpoint)
+        {
+            foreach (var player in playerPositions)
+            {
+                var positionsMessage = new StringBuilder($"PlayerPositions:{player.Key}");
+                foreach (var position in player.Value)
+                {
+                    positionsMessage.Append($":{position.X},{position.Y}");
+                }
+                positionsMessage.Append(messageDelimiter);
+                await SendDataToClient(clientEndpoint, positionsMessage.ToString());
+            }
+
+            foreach (var player in playerCreatures)
+            {
+                var creatureMessage = $"PlayerCreature:{player.Key}:{player.Value}{messageDelimiter}";
+                await SendDataToClient(clientEndpoint, creatureMessage);
+            }
         }
 
         private static async Task SendDataToClient(IPEndPoint clientEndpoint, string message)
