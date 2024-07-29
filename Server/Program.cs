@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Serilog;
 
 namespace GameServer
 {
@@ -18,31 +19,49 @@ namespace GameServer
 
         public static async Task Main(string[] args)
         {
-            int port = 12345;
-            server = new UdpClient(port);
-            Console.WriteLine($"Server started on port {port}.");
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File("logs/server-log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
 
-            _ = Task.Run(() => BroadcastGameStateLoop());
-
-            while (true)
+            try
             {
-                var result = await server.ReceiveAsync();
-                var clientEndpoint = result.RemoteEndPoint;
-                string message = Encoding.ASCII.GetString(result.Buffer);
-                Console.WriteLine($"Received message from {clientEndpoint}: {message}");
+                Log.Information("Starting server...");
+                int port = 12345;
+                server = new UdpClient(port);
+                Log.Information("Server started on port {Port}.", port);
 
-                if (!clients.ContainsKey(clientEndpoint))
+                _ = Task.Run(() => BroadcastGameStateLoop());
+
+                while (true)
                 {
-                    int newPlayerId = nextPlayerId++;
-                    clients[clientEndpoint] = newPlayerId;
-                    await SendDataToClient(clientEndpoint, $"PlayerId:{newPlayerId}{messageDelimiter}");
-                    var initialPosition = new Vector2(400 + (newPlayerId * 20), 240);
-                    playerPositions[newPlayerId] = new List<Vector2> { initialPosition };
-                    Console.WriteLine($"Client connected with PlayerId: {newPlayerId}");
-                }
+                    var result = await server.ReceiveAsync();
+                    var clientEndpoint = result.RemoteEndPoint;
+                    string message = Encoding.ASCII.GetString(result.Buffer);
+                    Log.Information("Received message from {ClientEndpoint}: {Message}", clientEndpoint, message);
 
-                var playerId = clients[clientEndpoint];
-                HandleMessage(message, playerId);
+                    if (!clients.ContainsKey(clientEndpoint))
+                    {
+                        int newPlayerId = nextPlayerId++;
+                        clients[clientEndpoint] = newPlayerId;
+                        await SendDataToClient(clientEndpoint, $"PlayerId:{newPlayerId}{messageDelimiter}");
+                        var initialPosition = new Vector2(400 + (newPlayerId * 20), 240);
+                        playerPositions[newPlayerId] = new List<Vector2> { initialPosition };
+                        Log.Information("Client connected with PlayerId: {PlayerId}", newPlayerId);
+                    }
+
+                    var playerId = clients[clientEndpoint];
+                    HandleMessage(message, playerId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "The server encountered a fatal error.");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
             }
         }
 
@@ -53,7 +72,7 @@ namespace GameServer
                 var messages = message.Split(new[] { messageDelimiter }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var msg in messages)
                 {
-                    Console.WriteLine($"[Server] Received: {msg}");
+                    Log.Information("[Server] Received: {Message}", msg);
                     if (msg.StartsWith("PlayerPositions:"))
                     {
                         var parts = msg.Substring("PlayerPositions:".Length).Split(':');
@@ -69,20 +88,20 @@ namespace GameServer
                         }
 
                         playerPositions[id] = positions;
-                        Console.WriteLine($"[Server] Updated positions for player {id}: {string.Join(", ", positions)}");
+                        Log.Information("[Server] Updated positions for player {Id}: {Positions}", id, string.Join(", ", positions));
                     }
                     else if (msg.StartsWith("CreatureType:"))
                     {
                         var creatureType = msg.Substring("CreatureType:".Length);
                         playerCreatures[playerId] = creatureType;
                         BroadcastCreatureType(playerId, creatureType);
-                        Console.WriteLine($"[Server] Player {playerId} selected creature: {creatureType}");
+                        Log.Information("[Server] Player {PlayerId} selected creature: {CreatureType}", playerId, creatureType);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Server] Error handling message from player {playerId}: {ex.Message}");
+                Log.Error(ex, "[Server] Error handling message from player {PlayerId}", playerId);
             }
         }
 
@@ -128,14 +147,14 @@ namespace GameServer
             {
                 server.SendAsync(data, data.Length, client);
             }
-            Console.WriteLine($"Broadcasted game state: {gameStateMessage}");
+            Log.Information("Broadcasted game state: {GameStateMessage}", gameStateMessage);
         }
 
         private static async Task SendDataToClient(IPEndPoint clientEndpoint, string message)
         {
             byte[] data = Encoding.ASCII.GetBytes(message);
             await server.SendAsync(data, data.Length, clientEndpoint);
-            Console.WriteLine($"Sent to {clientEndpoint}: {message}");
+            Log.Information("Sent to {ClientEndpoint}: {Message}", clientEndpoint, message);
         }
     }
 

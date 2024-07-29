@@ -11,6 +11,7 @@ namespace SimpleGame
             // Configure Serilog
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Write logs to a file with daily rolling
                 .CreateLogger();
 
             try
