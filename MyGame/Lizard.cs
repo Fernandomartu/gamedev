@@ -86,54 +86,59 @@ namespace SimpleGame
             UpdatePositions(MathHelper.ToRadians(70f)); // Adjust the angle as needed
         }
 
-        private void UpdatePositions(float maxAngleChange)
+       private void UpdatePositions(float maxAngleChange)
+{
+    for (int i = 1; i < allPositions.Count; i++)
+    {
+        Vector2 direction;
+        if (i == 1)
         {
-            for (int i = 1; i < allPositions.Count; i++)
-            {
-                Vector2 direction;
-                if (i == 1)
-                {
-                    direction = allPositions[0] - allPositions[i];
-                }
-                else
-                {
-                    direction = allPositions[i - 1] - allPositions[i];
-                }
+            // Calculate the desired position of the first body part relative to the head's direction
+            float headAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi; // Directly behind the head
+            Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(headAngle), (float)Math.Sin(headAngle)) * allRadii[i]/2;
 
-                float length = direction.Length();
-                if (length < float.Epsilon)
-                {
-                    length = 1;
-                }
-
-                direction.Normalize();
-                float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-                if (i > 1)
-                {
-                    float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
-                    float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
-
-                    if (Math.Abs(angleDiff) > maxAngleChange)
-                    {
-                        angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
-                    }
-                }
-
-                direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-                allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
-            }
-
-            // Update bodyParts with new positions
-            int index = 0;
-            foreach (var part in bodyParts)
-            {
-                for (int i = 0; i < part.Positions.Count; i++, index++)
-                {
-                    part.Positions[i] = allPositions[index];
-                }
-            }
+            // Smoothly move towards the desired position
+            allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.1f); // Adjust the interpolation factor as needed
         }
+        else
+        {
+            direction = allPositions[i - 1] - allPositions[i];
+
+            float length = direction.Length();
+            if (length < float.Epsilon)
+            {
+                length = 1;
+            }
+
+            direction.Normalize();
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+            if (i > 1)
+            {
+                float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
+                float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
+
+                if (Math.Abs(angleDiff) > maxAngleChange)
+                {
+                    angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
+                }
+            }
+
+            direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+            allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
+        }
+    }
+
+    // Update bodyParts with new positions
+    int index = 0;
+    foreach (var part in bodyParts)
+    {
+        for (int i = 0; i < part.Positions.Count; i++, index++)
+        {
+            part.Positions[i] = allPositions[index];
+        }
+    }
+}
 
         public void DrawHeadPoints(SpriteBatch spriteBatch)
         {
@@ -144,12 +149,14 @@ namespace SimpleGame
             Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
             Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
             Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
+            Vector2 bodyPoint = GetPointOnCircumference(allPositions[1], allRadii[1], angle + MathHelper.PiOver2);
 
             Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
 
             spriteBatch.Draw(pointTexture, frontPoint, Color.White);
             spriteBatch.Draw(pointTexture, leftPoint, Color.White);
             spriteBatch.Draw(pointTexture, rightPoint, Color.White);
+            spriteBatch.Draw(pointTexture, bodyPoint, Color.White);
         }
 
         private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
