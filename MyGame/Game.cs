@@ -160,6 +160,12 @@ namespace SimpleGame
                 {
                     part.Draw(spriteBatch);
                 }
+
+                // Draw head points for each lizard
+                if (player.ControlledCreature is Lizard lizard)
+                {
+                    lizard.DrawHeadPoints(spriteBatch);
+                }
             }
         }
 

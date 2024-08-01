@@ -45,6 +45,7 @@ namespace SimpleGame
         {
             ControlledCreature = newCreature;
         }
+
+
     }
-    
 }

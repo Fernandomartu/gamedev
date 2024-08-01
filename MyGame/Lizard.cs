@@ -9,6 +9,7 @@ namespace SimpleGame
     {
         private List<Vector2> allPositions;
         private List<int> allRadii;
+        private Vector2 direction;
 
         public Lizard(GraphicsDevice graphicsDevice, Vector2 startPosition)
             : base(200f)
@@ -63,6 +64,8 @@ namespace SimpleGame
             bodyParts.Add(tail);
             allPositions.AddRange(tailPositions);
             allRadii.AddRange(tailRadii);
+
+            direction = Vector2.UnitX; // Initial direction
         }
 
         public override void Update(GameTime gameTime, Vector2 targetPosition)
@@ -72,7 +75,7 @@ namespace SimpleGame
                 targetPosition = HeadPosition;
             }
 
-            Vector2 direction = targetPosition - HeadPosition;
+            direction = targetPosition - HeadPosition;
             direction.Normalize();
 
             allPositions[0] += direction * CircleSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -130,6 +133,31 @@ namespace SimpleGame
                     part.Positions[i] = allPositions[index];
                 }
             }
+        }
+
+        public void DrawHeadPoints(SpriteBatch spriteBatch)
+        {
+            Vector2 headPosition = allPositions[0];
+            int headRadius = allRadii[0];
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+            Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
+            Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
+            Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
+
+            Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
+
+            spriteBatch.Draw(pointTexture, frontPoint, Color.White);
+            spriteBatch.Draw(pointTexture, leftPoint, Color.White);
+            spriteBatch.Draw(pointTexture, rightPoint, Color.White);
+        }
+
+        private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
+        {
+            return new Vector2(
+                center.X + radius * (float)Math.Cos(angle),
+                center.Y + radius * (float)Math.Sin(angle)
+            );
         }
     }
 }

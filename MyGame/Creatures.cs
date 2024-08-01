@@ -19,25 +19,24 @@ namespace SimpleGame
         }
 
         protected Texture2D CreateCircleTexture(GraphicsDevice device, int radius, Color color)
-        {
-            int diameter = radius * 2;
-            Texture2D texture = new Texture2D(device, diameter, diameter);
-            Color[] data = new Color[diameter * diameter];
+{
+    int diameter = radius * 2;
+    Texture2D texture = new Texture2D(device, diameter, diameter);
+    Color[] data = new Color[diameter * diameter];
 
-            for (int i = 0; i < data.Length; i++)
-            {
-                int x = (i % diameter) - radius;
-                int y = (i / diameter) - radius;
-                if (x * x + y * y <= radius * radius)
-                    data[i] = color;
-                else
-                    data[i] = Color.Transparent;
-            }
+    for (int i = 0; i < data.Length; i++)
+    {
+        int x = (i % diameter) - radius;
+        int y = (i / diameter) - radius;
+        if (x * x + y * y <= radius * radius)
+            data[i] = color;
+        else
+            data[i] = Color.Transparent;
+    }
 
-            texture.SetData(data);
-            return texture;
-        }
-
+    texture.SetData(data);
+    return texture;
+}
         public abstract void Update(GameTime gameTime, Vector2 targetPosition);
 
         public void SetAllPositions(List<Vector2> newPositions)
