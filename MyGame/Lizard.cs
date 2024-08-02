@@ -147,7 +147,7 @@ namespace SimpleGame
     }
 }
 
-public void DrawHeadPoints(SpriteBatch spriteBatch)
+public void DrawOutline(SpriteBatch spriteBatch)
 {
     Vector2 headPosition = allPositions[0];
     int headRadius = allRadii[0];
