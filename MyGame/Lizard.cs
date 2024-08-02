@@ -17,10 +17,11 @@ namespace SimpleGame
             // Initialize allPositions and allRadii
             allPositions = new List<Vector2>();
             allRadii = new List<int>();
+            var LizardCol = Color.Transparent;
 
             // Head
             List<Vector2> headPos = new List<Vector2> { startPosition };
-            List<Texture2D> headTextures = new List<Texture2D> { CreateCircleTexture(graphicsDevice, 20, Color.Green) };
+            List<Texture2D> headTextures = new List<Texture2D> { CreateCircleTexture(graphicsDevice, 20, LizardCol) };
             List<int> headRadii = new List<int> { 20 };
             var head = new BodyPart(headPos, headTextures, headRadii, "Head");
             bodyParts.Add(head);
@@ -35,8 +36,8 @@ namespace SimpleGame
             };
             List<Texture2D> bodyTextures = new List<Texture2D>
             {
-                CreateCircleTexture(graphicsDevice, 25, Color.Green),
-                CreateCircleTexture(graphicsDevice, 25, Color.Green)
+                CreateCircleTexture(graphicsDevice, 25, LizardCol),
+                CreateCircleTexture(graphicsDevice, 25, LizardCol)
             };
             List<int> bodyRadii = new List<int> { 25, 25 };
             var body = new BodyPart(bodyPositions, bodyTextures, bodyRadii, "Body") { PreviousPart = head };
@@ -50,16 +51,22 @@ namespace SimpleGame
                 startPosition - new Vector2(0, 75),
                 startPosition - new Vector2(0, 100),
                 startPosition - new Vector2(0, 125),
-                startPosition - new Vector2(0, 150)
+                startPosition - new Vector2(0, 150),
+                startPosition - new Vector2(0, 175),
+                startPosition - new Vector2(0, 200),
+                startPosition - new Vector2(0, 225)
             };
             List<Texture2D> tailTextures = new List<Texture2D>
             {
-                CreateCircleTexture(graphicsDevice, 20, Color.Green),
-                CreateCircleTexture(graphicsDevice, 18, Color.Green),
-                CreateCircleTexture(graphicsDevice, 16, Color.Green),
-                CreateCircleTexture(graphicsDevice, 14, Color.Green)
+                CreateCircleTexture(graphicsDevice, 20, LizardCol),
+                CreateCircleTexture(graphicsDevice, 18, LizardCol),
+                CreateCircleTexture(graphicsDevice, 16, LizardCol),
+                CreateCircleTexture(graphicsDevice, 14, LizardCol),
+                CreateCircleTexture(graphicsDevice, 12, LizardCol),
+                CreateCircleTexture(graphicsDevice, 10, LizardCol),
+                CreateCircleTexture(graphicsDevice, 8, LizardCol)
             };
-            List<int> tailRadii = new List<int> { 20, 18, 16, 14 };
+            List<int> tailRadii = new List<int> { 20, 18, 16, 14, 12, 10, 8 };
             var tail = new BodyPart(tailPositions, tailTextures, tailRadii, "Tail") { PreviousPart = body };
             bodyParts.Add(tail);
             allPositions.AddRange(tailPositions);
@@ -98,7 +105,7 @@ namespace SimpleGame
             Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(headAngle), (float)Math.Sin(headAngle)) * allRadii[i]/2;
 
             // Smoothly move towards the desired position
-            allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.1f); // Adjust the interpolation factor as needed
+            allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.095f); // Adjust the interpolation factor as needed
         }
         else
         {
@@ -140,31 +147,99 @@ namespace SimpleGame
     }
 }
 
-        public void DrawHeadPoints(SpriteBatch spriteBatch)
+public void DrawHeadPoints(SpriteBatch spriteBatch)
+{
+    Vector2 headPosition = allPositions[0];
+    int headRadius = allRadii[0];
+    float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+    // Calculate head points
+    Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
+    Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
+    Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
+    Vector2 leftMidPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver4);
+    Vector2 rightMidPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver4);
+
+    // Define the array for all points, adding additional points for a more rounded shape
+    Vector2[] allPoints = new Vector2[(allPositions.Count - 1) * 2 + 7]; // Adjusted array size
+
+    // Add head points
+    allPoints[0] = frontPoint;
+    allPoints[1] = leftMidPoint;
+    allPoints[2] = leftPoint;
+
+    // Calculate left points around each body part and add them to the array
+    int index = 3;
+    for (int i = 1; i < allPositions.Count; i++)
+    {
+        float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
+        allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle - MathHelper.PiOver2);
+    }
+
+    // Add the tip of the tail with corrected angle
+    Vector2 tailTipPosition = allPositions[allPositions.Count - 1];
+    int tailTipRadius = allRadii[allRadii.Count - 1];
+    float tailAngle = (float)Math.Atan2(allPositions[allPositions.Count - 2].Y - tailTipPosition.Y, allPositions[allPositions.Count - 2].X - tailTipPosition.X);
+    Vector2 tailTip = GetPointOnCircumference(tailTipPosition, tailTipRadius, tailAngle + MathHelper.Pi);
+    allPoints[index++] = tailTip;
+
+    // Calculate right points around each body part and add them to the array
+    for (int i = allPositions.Count - 1; i > 0; i--)
+    {
+        float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
+        allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle + MathHelper.PiOver2);
+    }
+
+    // Add the right point of the head, right mid-point, and another front point to the end of the array
+    allPoints[index++] = rightPoint;
+    allPoints[index++] = rightMidPoint;
+    allPoints[index] = frontPoint;
+
+    Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
+
+    // Draw all points
+    foreach (var point in allPoints)
+    {
+        spriteBatch.Draw(pointTexture, point, Color.White);
+    }
+
+    // Draw lines between the points
+    for (int i = 0; i < allPoints.Length - 1; i++)
+    {
+        if (allPoints[i] != Vector2.Zero && allPoints[i + 1] != Vector2.Zero) // Ensure no (0,0) points are drawn
         {
-            Vector2 headPosition = allPositions[0];
-            int headRadius = allRadii[0];
-            float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-            Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
-            Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
-            Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
-            Vector2 bodyPoint = GetPointOnCircumference(allPositions[1], allRadii[1], angle + MathHelper.PiOver2);
-
-            Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
-
-            spriteBatch.Draw(pointTexture, frontPoint, Color.White);
-            spriteBatch.Draw(pointTexture, leftPoint, Color.White);
-            spriteBatch.Draw(pointTexture, rightPoint, Color.White);
-            spriteBatch.Draw(pointTexture, bodyPoint, Color.White);
+            DrawLine(spriteBatch, pointTexture, allPoints[i], allPoints[i + 1], Color.White, 1);
         }
+    }
 
-        private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
-        {
-            return new Vector2(
-                center.X + radius * (float)Math.Cos(angle),
-                center.Y + radius * (float)Math.Sin(angle)
-            );
-        }
+    // Connect the last point to the first point to close the polygon
+    if (allPoints[allPoints.Length - 1] != Vector2.Zero && allPoints[0] != Vector2.Zero) // Ensure no (0,0) points are drawn
+    {
+        DrawLine(spriteBatch, pointTexture, allPoints[allPoints.Length - 1], allPoints[0], Color.White, 1);
+    }
+}
+
+private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
+{
+    return new Vector2(
+        center.X + radius * (float)Math.Cos(angle),
+        center.Y + radius * (float)Math.Sin(angle)
+    );
+}
+
+private void DrawLine(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, Vector2 end, Color color, int thickness)
+{
+    Vector2 edge = end - start;
+    float angle = (float)Math.Atan2(edge.Y, edge.X);
+
+    spriteBatch.Draw(texture,
+        new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), thickness),
+        null,
+        color,
+        angle,
+        new Vector2(0, 0.5f),
+        SpriteEffects.None,
+        0);
+}
     }
 }
