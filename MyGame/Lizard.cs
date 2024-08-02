@@ -10,6 +10,13 @@ namespace SimpleGame
         private List<Vector2> allPositions;
         private List<int> allRadii;
         private Vector2 direction;
+        private Vector2 legOneTarget;
+        private Vector2 legOneFoot;
+        private Vector2 legOneJoint;
+        private float legMoveThreshold = 20f; // Adjust as needed
+
+        private Texture2D legTexture;
+        private int legRadius = 10;
 
         public Lizard(GraphicsDevice graphicsDevice, Vector2 startPosition)
             : base(200f)
@@ -17,7 +24,7 @@ namespace SimpleGame
             // Initialize allPositions and allRadii
             allPositions = new List<Vector2>();
             allRadii = new List<int>();
-            var LizardCol = Color.Transparent;
+            var LizardCol = Color.Green;
 
             // Head
             List<Vector2> headPos = new List<Vector2> { startPosition };
@@ -72,6 +79,17 @@ namespace SimpleGame
             allPositions.AddRange(tailPositions);
             allRadii.AddRange(tailRadii);
 
+            // Leg One
+                float initialBodyAngle = (float)Math.Atan2(allPositions[0].Y - allPositions[1].Y, allPositions[0].X - allPositions[1].X);
+    float legAngleOffset = MathHelper.PiOver4; // Adjust the offset angle as needed
+    float legDistance = 60; // Adjust the distance as needed
+
+    legOneTarget = allPositions[1] + new Vector2((float)Math.Cos(initialBodyAngle + legAngleOffset), (float)Math.Sin(initialBodyAngle + legAngleOffset)) * legDistance;
+    legOneFoot = legOneTarget;
+    legOneJoint = allPositions[1] + (legOneFoot - allPositions[1]) * 0.6f; // Adjust the ratio as needed
+
+            legTexture = CreateCircleTexture(graphicsDevice, legRadius, Color.Green);
+
             direction = Vector2.UnitX; // Initial direction
         }
 
@@ -91,155 +109,190 @@ namespace SimpleGame
             Console.WriteLine($"Head Position: {allPositions[0]}");
 
             UpdatePositions(MathHelper.ToRadians(70f)); // Adjust the angle as needed
+            UpdateLegOne(); // Update leg position
         }
 
-       private void UpdatePositions(float maxAngleChange)
-{
-    for (int i = 1; i < allPositions.Count; i++)
-    {
-        Vector2 direction;
-        if (i == 1)
+        private void UpdatePositions(float maxAngleChange)
         {
-            // Calculate the desired position of the first body part relative to the head's direction
-            float headAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi; // Directly behind the head
-            Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(headAngle), (float)Math.Sin(headAngle)) * allRadii[i]/2;
-
-            // Smoothly move towards the desired position
-            allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.095f); // Adjust the interpolation factor as needed
-        }
-        else
-        {
-            direction = allPositions[i - 1] - allPositions[i];
-
-            float length = direction.Length();
-            if (length < float.Epsilon)
+            for (int i = 1; i < allPositions.Count; i++)
             {
-                length = 1;
-            }
-
-            direction.Normalize();
-            float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-            if (i > 1)
-            {
-                float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
-                float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
-
-                if (Math.Abs(angleDiff) > maxAngleChange)
+                Vector2 direction;
+                if (i == 1)
                 {
-                    angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
+                    // Calculate the desired position of the first body part relative to the head's direction
+                    float headAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi; // Directly behind the head
+                    Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(headAngle), (float)Math.Sin(headAngle)) * allRadii[i] / 2;
+
+                    // Smoothly move towards the desired position
+                    allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.095f); // Adjust the interpolation factor as needed
+                }
+                else
+                {
+                    direction = allPositions[i - 1] - allPositions[i];
+
+                    float length = direction.Length();
+                    if (length < float.Epsilon)
+                    {
+                        length = 1;
+                    }
+
+                    direction.Normalize();
+                    float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+                    if (i > 1)
+                    {
+                        float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
+                        float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
+
+                        if (Math.Abs(angleDiff) > maxAngleChange)
+                        {
+                            angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
+                        }
+                    }
+
+                    direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+                    allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
                 }
             }
 
-            direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-            allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
+            // Update bodyParts with new positions
+            int index = 0;
+            foreach (var part in bodyParts)
+            {
+                for (int i = 0; i < part.Positions.Count; i++, index++)
+                {
+                    part.Positions[i] = allPositions[index];
+                }
+            }
         }
+
+  private void UpdateLegOne()
+{
+    Vector2 anchor = allPositions[1];
+    Vector2 toTarget = legOneTarget - legOneFoot;
+
+    if (toTarget.Length() > legMoveThreshold)
+    {
+        legOneFoot = legOneTarget;
     }
 
-    // Update bodyParts with new positions
-    int index = 0;
-    foreach (var part in bodyParts)
-    {
-        for (int i = 0; i < part.Positions.Count; i++, index++)
+    // Update leg target relative to the direction the lizard is facing
+    float bodyAngle = (float)Math.Atan2(allPositions[0].Y - allPositions[1].Y, allPositions[0].X - allPositions[1].X);
+    float legAngleOffset = MathHelper.PiOver4; // Adjust the offset angle as needed
+    float legDistance = 50; // Adjust the distance as needed
+    legOneTarget = anchor + new Vector2((float)Math.Cos(bodyAngle + legAngleOffset), (float)Math.Sin(bodyAngle + legAngleOffset)) * legDistance;
+
+    // Calculate the angle between the anchor and the foot
+    Vector2 toFoot = legOneFoot - anchor;
+    float footAngle = (float)Math.Atan2(toFoot.Y, toFoot.X);
+
+    // Calculate the desired angle for the joint in relation to the anchor
+    float jointAngle = footAngle + MathHelper.PiOver4; // Adjust the offset angle as needed
+    float jointDistance = 30f; // Distance from the anchor to the joint, adjust as needed
+
+    // Calculate the joint position using the angle and distance
+    legOneJoint = anchor + new Vector2((float)Math.Cos(jointAngle), (float)Math.Sin(jointAngle)) * jointDistance;
+
+    // Smoothly move the foot to the target
+    legOneFoot = Vector2.Lerp(legOneFoot, legOneTarget, 0.1f); // Adjust the interpolation factor as needed
+}
+        public void DrawOutline(SpriteBatch spriteBatch)
         {
-            part.Positions[i] = allPositions[index];
+            Vector2 headPosition = allPositions[0];
+            int headRadius = allRadii[0];
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+            // Calculate head points
+            Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
+            Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
+            Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
+            Vector2 leftMidPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver4);
+            Vector2 rightMidPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver4);
+
+            // Define the array for all points, adding additional points for a more rounded shape
+            Vector2[] allPoints = new Vector2[(allPositions.Count - 1) * 2 + 7]; // Adjusted array size
+
+            // Add head points
+            allPoints[0] = frontPoint;
+            allPoints[1] = leftMidPoint;
+            allPoints[2] = leftPoint;
+
+            // Calculate left points around each body part and add them to the array
+            int index = 3;
+            for (int i = 1; i < allPositions.Count; i++)
+            {
+                float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
+                allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle - MathHelper.PiOver2);
+            }
+
+            // Add the tip of the tail with corrected angle
+            Vector2 tailTipPosition = allPositions[allPositions.Count - 1];
+            int tailTipRadius = allRadii[allRadii.Count - 1];
+            float tailAngle = (float)Math.Atan2(allPositions[allPositions.Count - 2].Y - tailTipPosition.Y, allPositions[allPositions.Count - 2].X - tailTipPosition.X);
+            Vector2 tailTip = GetPointOnCircumference(tailTipPosition, tailTipRadius, tailAngle + MathHelper.Pi);
+            allPoints[index++] = tailTip;
+
+            // Calculate right points around each body part and add them to the array
+            for (int i = allPositions.Count - 1; i > 0; i--)
+            {
+                float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
+                allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle + MathHelper.PiOver2);
+            }
+
+            // Add the right point of the head, right mid-point, and another front point to the end of the array
+            allPoints[index++] = rightPoint;
+            allPoints[index++] = rightMidPoint;
+            allPoints[index] = frontPoint;
+
+            Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
+
+            // Draw all points
+            foreach (var point in allPoints)
+            {
+                spriteBatch.Draw(pointTexture, point, Color.White);
+            }
+
+            // Draw lines between the points
+            for (int i = 0; i < allPoints.Length - 1; i++)
+            {
+                if (allPoints[i] != Vector2.Zero && allPoints[i + 1] != Vector2.Zero) // Ensure no (0,0) points are drawn
+                {
+                    DrawLine(spriteBatch, pointTexture, allPoints[i], allPoints[i + 1], Color.White, 1);
+                }
+            }
+
+            // Connect the last point to the first point to close the polygon
+            if (allPoints[allPoints.Length - 1] != Vector2.Zero && allPoints[0] != Vector2.Zero) // Ensure no (0,0) points are drawn
+            {
+                DrawLine(spriteBatch, pointTexture, allPoints[allPoints.Length - 1], allPoints[0], Color.White, 1);
+            }
+
+            // Draw the leg as circles
+            spriteBatch.Draw(legTexture, legOneJoint - new Vector2(legRadius), Color.White);
+            spriteBatch.Draw(legTexture, legOneFoot - new Vector2(legRadius), Color.White);
         }
-    }
-}
 
-public void DrawOutline(SpriteBatch spriteBatch)
-{
-    Vector2 headPosition = allPositions[0];
-    int headRadius = allRadii[0];
-    float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-    // Calculate head points
-    Vector2 frontPoint = GetPointOnCircumference(headPosition, headRadius, angle);
-    Vector2 leftPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver2);
-    Vector2 rightPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver2);
-    Vector2 leftMidPoint = GetPointOnCircumference(headPosition, headRadius, angle - MathHelper.PiOver4);
-    Vector2 rightMidPoint = GetPointOnCircumference(headPosition, headRadius, angle + MathHelper.PiOver4);
-
-    // Define the array for all points, adding additional points for a more rounded shape
-    Vector2[] allPoints = new Vector2[(allPositions.Count - 1) * 2 + 7]; // Adjusted array size
-
-    // Add head points
-    allPoints[0] = frontPoint;
-    allPoints[1] = leftMidPoint;
-    allPoints[2] = leftPoint;
-
-    // Calculate left points around each body part and add them to the array
-    int index = 3;
-    for (int i = 1; i < allPositions.Count; i++)
-    {
-        float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
-        allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle - MathHelper.PiOver2);
-    }
-
-    // Add the tip of the tail with corrected angle
-    Vector2 tailTipPosition = allPositions[allPositions.Count - 1];
-    int tailTipRadius = allRadii[allRadii.Count - 1];
-    float tailAngle = (float)Math.Atan2(allPositions[allPositions.Count - 2].Y - tailTipPosition.Y, allPositions[allPositions.Count - 2].X - tailTipPosition.X);
-    Vector2 tailTip = GetPointOnCircumference(tailTipPosition, tailTipRadius, tailAngle + MathHelper.Pi);
-    allPoints[index++] = tailTip;
-
-    // Calculate right points around each body part and add them to the array
-    for (int i = allPositions.Count - 1; i > 0; i--)
-    {
-        float partAngle = (float)Math.Atan2(allPositions[i - 1].Y - allPositions[i].Y, allPositions[i - 1].X - allPositions[i].X);
-        allPoints[index++] = GetPointOnCircumference(allPositions[i], allRadii[i], partAngle + MathHelper.PiOver2);
-    }
-
-    // Add the right point of the head, right mid-point, and another front point to the end of the array
-    allPoints[index++] = rightPoint;
-    allPoints[index++] = rightMidPoint;
-    allPoints[index] = frontPoint;
-
-    Texture2D pointTexture = CreateCircleTexture(spriteBatch.GraphicsDevice, 2, Color.Red);
-
-    // Draw all points
-    foreach (var point in allPoints)
-    {
-        spriteBatch.Draw(pointTexture, point, Color.White);
-    }
-
-    // Draw lines between the points
-    for (int i = 0; i < allPoints.Length - 1; i++)
-    {
-        if (allPoints[i] != Vector2.Zero && allPoints[i + 1] != Vector2.Zero) // Ensure no (0,0) points are drawn
+        private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
         {
-            DrawLine(spriteBatch, pointTexture, allPoints[i], allPoints[i + 1], Color.White, 1);
+            return new Vector2(
+                center.X + radius * (float)Math.Cos(angle),
+                center.Y + radius * (float)Math.Sin(angle)
+            );
         }
-    }
 
-    // Connect the last point to the first point to close the polygon
-    if (allPoints[allPoints.Length - 1] != Vector2.Zero && allPoints[0] != Vector2.Zero) // Ensure no (0,0) points are drawn
-    {
-        DrawLine(spriteBatch, pointTexture, allPoints[allPoints.Length - 1], allPoints[0], Color.White, 1);
-    }
-}
+        private void DrawLine(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, Vector2 end, Color color, int thickness)
+        {
+            Vector2 edge = end - start;
+            float angle = (float)Math.Atan2(edge.Y, edge.X);
 
-private Vector2 GetPointOnCircumference(Vector2 center, int radius, float angle)
-{
-    return new Vector2(
-        center.X + radius * (float)Math.Cos(angle),
-        center.Y + radius * (float)Math.Sin(angle)
-    );
-}
-
-private void DrawLine(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, Vector2 end, Color color, int thickness)
-{
-    Vector2 edge = end - start;
-    float angle = (float)Math.Atan2(edge.Y, edge.X);
-
-    spriteBatch.Draw(texture,
-        new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), thickness),
-        null,
-        color,
-        angle,
-        new Vector2(0, 0.5f),
-        SpriteEffects.None,
-        0);
-}
+            spriteBatch.Draw(texture,
+                new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), thickness),
+                null,
+                color,
+                angle,
+                new Vector2(0, 0.5f),
+                SpriteEffects.None,
+                0);
+        }
     }
 }
