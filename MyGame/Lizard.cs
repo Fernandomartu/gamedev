@@ -108,63 +108,86 @@ namespace SimpleGame
             // Debug: Print head position to check movement
             Console.WriteLine($"Head Position: {allPositions[0]}");
 
-            UpdatePositions(MathHelper.ToRadians(70f)); // Adjust the angle as needed
+            UpdatePositions(MathHelper.ToRadians(40f)); // Adjust the angle as needed
             UpdateLegOne(); // Update leg position
         }
 
         private void UpdatePositions(float maxAngleChange)
+{
+    float interpolationSpeed = 0.1f; // Adjust this value for how quickly the body rotates around the head
+
+    for (int i = 1; i < allPositions.Count; i++)
+    {
+        Vector2 direction;
+        if (i == 1)
         {
-            for (int i = 1; i < allPositions.Count; i++)
-            {
-                Vector2 direction;
-                if (i == 1)
-                {
-                    // Calculate the desired position of the first body part relative to the head's direction
-                    float headAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi; // Directly behind the head
-                    Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(headAngle), (float)Math.Sin(headAngle)) * allRadii[i] / 2;
+            // Calculate the current angle of the first body part relative to the head
+            float currentAngle = (float)Math.Atan2(allPositions[i].Y - allPositions[0].Y, allPositions[i].X - allPositions[0].X);
+            // Calculate the desired angle directly behind the head
+            float desiredAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi;
+            // Interpolate the angle gradually
+            float newAngle = LerpAngle(currentAngle, desiredAngle, interpolationSpeed);
 
-                    // Smoothly move towards the desired position
-                    allPositions[i] = Vector2.Lerp(allPositions[i], desiredPosition, 0.095f); // Adjust the interpolation factor as needed
-                }
-                else
-                {
-                    direction = allPositions[i - 1] - allPositions[i];
+            // Calculate the new position using the interpolated angle
+            Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle)) * allRadii[i] / 2;
 
-                    float length = direction.Length();
-                    if (length < float.Epsilon)
-                    {
-                        length = 1;
-                    }
-
-                    direction.Normalize();
-                    float angle = (float)Math.Atan2(direction.Y, direction.X);
-
-                    if (i > 1)
-                    {
-                        float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
-                        float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
-
-                        if (Math.Abs(angleDiff) > maxAngleChange)
-                        {
-                            angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
-                        }
-                    }
-
-                    direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-                    allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
-                }
-            }
-
-            // Update bodyParts with new positions
-            int index = 0;
-            foreach (var part in bodyParts)
-            {
-                for (int i = 0; i < part.Positions.Count; i++, index++)
-                {
-                    part.Positions[i] = allPositions[index];
-                }
-            }
+            // Set the new position for the first body part
+            allPositions[i] = desiredPosition;
         }
+        else
+        {
+            direction = allPositions[i - 1] - allPositions[i];
+
+            float length = direction.Length();
+            if (length < float.Epsilon)
+            {
+                length = 1;
+            }
+
+            direction.Normalize();
+            float angle = (float)Math.Atan2(direction.Y, direction.X);
+
+            if (i > 1)
+            {
+                float prevAngle = (float)Math.Atan2(allPositions[i - 2].Y - allPositions[i - 1].Y, allPositions[i - 2].X - allPositions[i - 1].X);
+                float angleDiff = MathHelper.WrapAngle(angle - prevAngle);
+
+                if (Math.Abs(angleDiff) > maxAngleChange)
+                {
+                    angle = prevAngle + Math.Sign(angleDiff) * maxAngleChange;
+                }
+            }
+
+            direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+            allPositions[i] = allPositions[i - 1] - direction * allRadii[i];
+        }
+    }
+
+    // Update bodyParts with new positions
+    int index = 0;
+    foreach (var part in bodyParts)
+    {
+        for (int i = 0; i < part.Positions.Count; i++, index++)
+        {
+            part.Positions[i] = allPositions[index];
+        }
+    }
+}
+
+private float LerpAngle(float from, float to, float t)
+{
+    float difference = MathHelper.WrapAngle(to - from);
+    if (difference < -MathHelper.Pi)
+    {
+        difference += MathHelper.TwoPi;
+    }
+    else if (difference > MathHelper.Pi)
+    {
+        difference -= MathHelper.TwoPi;
+    }
+
+    return from + difference * t;
+}
 
   private void UpdateLegOne()
 {
