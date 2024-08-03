@@ -48,7 +48,10 @@ namespace SimpleGame
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
+            
             Log.Information("Content loaded.");
+
+            
         }
 
         protected override void Initialize()
@@ -115,30 +118,40 @@ namespace SimpleGame
             base.Update(gameTime);
         }
 
-        protected override void Draw(GameTime gameTime)
+      protected override void Draw(GameTime gameTime)
+{
+    GraphicsDevice.Clear(Color.CornflowerBlue);
+
+    BasicEffect basicEffect = new BasicEffect(GraphicsDevice)
+    {
+        VertexColorEnabled = true,
+        Projection = Matrix.CreateOrthographicOffCenter(0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 0, 0, 1)
+    };
+
+    spriteBatch.Begin();
+    try
+    {
+        foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            spriteBatch.Begin();
-            try
+            pass.Apply();
+            if (gameState == GameState.Menu)
             {
-                if (gameState == GameState.Menu)
-                {
-                    DrawMenu();
-                }
-                else if (gameState == GameState.Playing)
-                {
-                    DrawCreatures(spriteBatch, playersDict.Values);
-                }
+                DrawMenu();
             }
-            catch (Exception ex)
+            else if (gameState == GameState.Playing)
             {
-                Log.Error(ex, "Error in Draw");
+                DrawCreatures(spriteBatch, playersDict.Values);
             }
-            spriteBatch.End();
-
-            base.Draw(gameTime);
         }
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error in Draw");
+    }
+    spriteBatch.End();
+
+    base.Draw(gameTime);
+}
 
         private void DrawMenu()
         {
@@ -152,22 +165,22 @@ namespace SimpleGame
             }
         }
 
-        private void DrawCreatures(SpriteBatch spriteBatch, IEnumerable<Player> players)
+     private void DrawCreatures(SpriteBatch spriteBatch, IEnumerable<Player> players)
+{
+    foreach (var player in players)
+    {
+        foreach (var part in player.ControlledCreature.bodyParts)
         {
-            foreach (var player in players)
-            {
-                foreach (var part in player.ControlledCreature.bodyParts)
-                {
-                    part.Draw(spriteBatch);
-                }
-
-                // Draw head points for each lizard
-                if (player.ControlledCreature is Lizard lizard)
-                {
-                    lizard.DrawOutline(spriteBatch);
-                }
-            }
+            part.Draw(spriteBatch);
         }
+          if (player.ControlledCreature is Lizard lizard)
+        {
+            lizard.DrawOutline(spriteBatch);
+        }
+
+        
+    }
+}
 
         private async void StartMultiplayer(string creatureType)
         {
