@@ -11,6 +11,10 @@ namespace SimpleGame
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+
+        public float scale = 0.44444f;
+
+        RenderTarget2D renderTarget;
         private Dictionary<int, Player> playersDict;
         private NetworkManager networkManager;
         public int playerId;  // Make these fields public so MessageHandler can access them
@@ -47,6 +51,9 @@ namespace SimpleGame
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
+
             menuFont = Content.Load<SpriteFont>("MenuFont"); // Ensure this path matches your content structure
             
             Log.Information("Content loaded.");
@@ -59,6 +66,10 @@ namespace SimpleGame
             base.Initialize();
             messageHandler = new MessageHandler(this, playersDict, GraphicsDevice, creatureOptions, selectedOption);
             Log.Information("Game initialized.");
+
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            graphics.ApplyChanges();
         }
 
         protected override void Update(GameTime gameTime)
@@ -120,6 +131,10 @@ namespace SimpleGame
 
       protected override void Draw(GameTime gameTime)
 {
+    scale = 1F/ (1089f/ graphics.GraphicsDevice.Viewport.Height);
+
+    GraphicsDevice.SetRenderTarget(renderTarget);
+
     GraphicsDevice.Clear(Color.CornflowerBlue);
 
     BasicEffect basicEffect = new BasicEffect(GraphicsDevice)
@@ -148,6 +163,14 @@ namespace SimpleGame
     {
         Log.Error(ex, "Error in Draw");
     }
+    spriteBatch.End();
+
+        GraphicsDevice.SetRenderTarget(null);
+
+    GraphicsDevice.Clear(Color.CornflowerBlue);
+
+    spriteBatch.Begin();
+    spriteBatch.Draw(renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     spriteBatch.End();
 
     base.Draw(gameTime);
