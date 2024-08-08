@@ -4,28 +4,49 @@ using System.Collections.Generic;
 
 namespace SimpleGame
 {
-    public class BodyPart
+   public class BodyPart
+{
+    public List<Vector2> Positions { get; set; }
+    public List<Texture2D> Textures { get; set; }
+    public List<int> Radii { get; set; }
+    public string Name { get; set; }
+    public BodyPart PreviousPart { get; set; }
+
+    public BodyPart(List<Vector2> positions, List<Texture2D> textures, List<int> radii, string name)
     {
-        public List<Vector2> Positions { get; private set; }
-        public List<int> Radii { get; private set; }
-        public List<Texture2D> Textures { get; private set; }
-        public BodyPart PreviousPart { get; set; }
-        public string Name { get; private set; }
+        Positions = positions;
+        Textures = textures;
+        Radii = radii;
+        Name = name;
+    }
 
-        public BodyPart(List<Vector2> positions, List<Texture2D> textures, List<int> radii, string name)
+    public void Draw(SpriteBatch spriteBatch, float rotationAngle = 0f, bool isFacingRight = true)
+    {
+        for (int i = 0; i < Positions.Count; i++)
         {
-            Positions = positions;
-            Textures = textures;
-            Radii = radii;
-            Name = name;
-        }
+            var texture = Textures[i];
+            var position = Positions[i];
+            var radius = Radii[i];
 
-        public void Draw(SpriteBatch spriteBatch)
-        {
-            for (int i = 0; i < Positions.Count; i++)
+            // Calculate the origin to center the texture
+            var origin = new Vector2(texture.Width / 2f, texture.Height / 2f);
+
+            // Scale the texture if necessary
+            var scale = (float)radius * 2 / texture.Width;
+
+            // Determine the sprite effects based on the facing direction
+            SpriteEffects spriteEffects = isFacingRight ? SpriteEffects.None : SpriteEffects.FlipVertically;
+
+            // Apply rotation and sprite effects for the head (first part)
+            if (Name == "Head")
             {
-                spriteBatch.Draw(Textures[i], Positions[i], null, Color.White, 0f, new Vector2(Radii[i], Radii[i]), 1f, SpriteEffects.None, 0f);
+                spriteBatch.Draw(texture, position, null, Color.White, rotationAngle, origin, scale, spriteEffects, 0f);
+            }
+            else
+            {
+                spriteBatch.Draw(texture, position, null, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
             }
         }
     }
+}
 }

@@ -165,20 +165,23 @@ namespace SimpleGame
             }
         }
 
-     private void DrawCreatures(SpriteBatch spriteBatch, IEnumerable<Player> players)
+    private void DrawCreatures(SpriteBatch spriteBatch, IEnumerable<Player> players)
 {
     foreach (var player in players)
     {
-        foreach (var part in player.ControlledCreature.bodyParts)
+        var creature = player.ControlledCreature;
+        for (int i = 0; i < creature.bodyParts.Count; i++)
         {
-            part.Draw(spriteBatch);
+            var part = creature.bodyParts[i];
+            if (i == 0 && part.Name == "Head") // Assuming the first body part is the head
+            {
+                part.Draw(spriteBatch, creature.HeadRotationAngle, ((Lizard)creature).IsFacingRight);
+            }
+            else
+            {
+                part.Draw(spriteBatch);
+            }
         }
-          if (player.ControlledCreature is Lizard lizard)
-        {
-            lizard.DrawOutline(spriteBatch);
-        }
-
-        
     }
 }
 

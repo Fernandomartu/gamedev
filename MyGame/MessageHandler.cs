@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Serilog;
 using SimpleGame;
@@ -12,6 +13,7 @@ namespace SimpleGame
         private readonly Game game;
         private readonly Dictionary<int, Player> playersDict;
         private readonly GraphicsDevice graphicsDevice;
+        private readonly ContentManager content;
         private readonly List<string> creatureOptions;
         private readonly string messageDelimiter = "\n";
         private int selectedOption;
@@ -21,6 +23,7 @@ namespace SimpleGame
             this.game = game;
             this.playersDict = playersDict;
             this.graphicsDevice = graphicsDevice;
+            this.content = game.Content;
             this.creatureOptions = creatureOptions;
             this.selectedOption = selectedOption;
         }
@@ -148,7 +151,7 @@ namespace SimpleGame
                     return new Snake(graphicsDevice, startPosition);
                 case "Lizard":
                 default:
-                    return new Lizard(graphicsDevice, startPosition);
+                    return new Lizard(graphicsDevice, content, startPosition);
             }
         }
     }
