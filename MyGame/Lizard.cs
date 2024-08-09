@@ -21,6 +21,9 @@ namespace SimpleGame
         private float headRotationAngle;
         private bool isFacingRight;
 
+        private Vector2 eyeballOffset = new Vector2(10, -10); // Example offset, adjust as needed
+    private Texture2D eyeballTexture;
+
         public Lizard(GraphicsDevice graphicsDevice, ContentManager content, Vector2 startPosition)
             : base(200f)
         {
@@ -30,6 +33,7 @@ namespace SimpleGame
 
             // Load the head texture
             headTexture = content.Load<Texture2D>("head_50");
+            eyeballTexture = content.Load<Texture2D>("LizardEye");
 
             // Initialize head with the texture
             List<Vector2> headPos = new List<Vector2> { startPosition };
@@ -218,5 +222,7 @@ namespace SimpleGame
         }
 
         public bool IsFacingRight => isFacingRight; // Property to expose the facing direction
+         public Texture2D EyeballTexture => eyeballTexture;
+    public Vector2 EyeballOffset => eyeballOffset;
     }
 }

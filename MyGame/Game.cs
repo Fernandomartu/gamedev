@@ -198,7 +198,8 @@ namespace SimpleGame
             var part = creature.bodyParts[i];
             if (i == 0 && part.Name == "Head") // Assuming the first body part is the head
             {
-                part.Draw(spriteBatch, creature.HeadRotationAngle, ((Lizard)creature).IsFacingRight);
+                var lizard = (Lizard)creature;
+                part.Draw(spriteBatch, lizard.HeadRotationAngle, lizard.IsFacingRight, lizard.EyeballTexture, lizard.EyeballOffset); // Pass the eyeball texture and offset
             }
             else
             {

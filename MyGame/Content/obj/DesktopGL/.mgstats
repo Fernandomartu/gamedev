@@ -1,3 +1,4 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
-"C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/head_50.png","C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/bin/DesktopGL/head_50.xnb","TextureProcessor","Texture2DContent",1136,10085,0.098103
+"C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/head_50.png","C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/bin/DesktopGL/head_50.xnb","TextureProcessor","Texture2DContent",1055,10085,0.0964087
+"C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/LizardEye.png","C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/bin/DesktopGL/LizardEye.xnb","TextureProcessor","Texture2DContent",258,1685,0.0013301
 "C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/MenuFont.spritefont","C:/Users/Admin/OneDrive/Documents/work projects/gamedev/MyGame/Content/bin/DesktopGL/MenuFont.xnb","FontDescriptionProcessor","SpriteFontContent",479,21535,0.0755994
