@@ -35,7 +35,7 @@ namespace SimpleGame
         var scale = (float)radius * 2 / texture.Width;
 
         // Determine the sprite effects based on the facing direction
-        SpriteEffects spriteEffects = isFacingRight ? SpriteEffects.FlipVertically : SpriteEffects.None;
+        SpriteEffects spriteEffects = isFacingRight ? SpriteEffects.None : SpriteEffects.FlipVertically;
 
         // Apply rotation and sprite effects for the head (first part)
         if (Name == "Head")

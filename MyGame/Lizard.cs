@@ -21,7 +21,7 @@ namespace SimpleGame
         private float headRotationAngle;
         private bool isFacingRight;
 
-        private Vector2 eyeballOffset = new Vector2(10, -10); // Example offset, adjust as needed
+        private Vector2 eyeballOffset = new Vector2(10, -13); // Example offset, adjust as needed
     private Texture2D eyeballTexture;
 
         public Lizard(GraphicsDevice graphicsDevice, ContentManager content, Vector2 startPosition)
@@ -29,7 +29,7 @@ namespace SimpleGame
         {
             allPositions = new List<Vector2>();
             allRadii = new List<int>();
-            var LizardCol = Color.Green;
+            var LizardCol = Color.Cyan;
 
             // Load the head texture
             headTexture = content.Load<Texture2D>("head_50");
@@ -38,7 +38,7 @@ namespace SimpleGame
             // Initialize head with the texture
             List<Vector2> headPos = new List<Vector2> { startPosition };
             List<Texture2D> headTextures = new List<Texture2D> { headTexture };
-            List<int> headRadii = new List<int> { 20 };
+            List<int> headRadii = new List<int> { 60 };
             var head = new BodyPart(headPos, headTextures, headRadii, "Head");
             bodyParts.Add(head);
             allPositions.AddRange(headPos);
@@ -150,7 +150,7 @@ namespace SimpleGame
                     float currentAngle = (float)Math.Atan2(allPositions[i].Y - allPositions[0].Y, allPositions[i].X - allPositions[0].X);
                     float desiredAngle = (float)Math.Atan2(this.direction.Y, this.direction.X) + MathHelper.Pi;
                     float newAngle = LerpAngle(currentAngle, desiredAngle, interpolationSpeed);
-                    Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle)) * allRadii[i - 1];
+                    Vector2 desiredPosition = allPositions[0] + new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle)) * allRadii[i - 1]/2;
                     allPositions[i] = desiredPosition;
                 }
                 else

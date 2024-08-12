@@ -193,7 +193,7 @@ namespace SimpleGame
     foreach (var player in players)
     {
         var creature = player.ControlledCreature;
-        for (int i = 0; i < creature.bodyParts.Count; i++)
+        for (int i = creature.bodyParts.Count-1; i >= 0; i--)
         {
             var part = creature.bodyParts[i];
             if (i == 0 && part.Name == "Head") // Assuming the first body part is the head
