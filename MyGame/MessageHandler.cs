@@ -147,8 +147,7 @@ namespace SimpleGame
         {
             switch (creatureType)
             {
-                case "Snake":
-                    return new Snake(graphicsDevice, startPosition);
+                
                 case "Lizard":
                 default:
                     return new Lizard(graphicsDevice, content, startPosition);

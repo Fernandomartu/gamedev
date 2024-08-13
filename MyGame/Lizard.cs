@@ -17,9 +17,10 @@ namespace SimpleGame
         private float legMoveThreshold = 20f; 
         private Texture2D legTexture;
         private int legRadius = 10;
-        private Texture2D headTexture;
         private float headRotationAngle;
         private bool isFacingRight;
+
+        private LizardSpine lizardSpine;
 
         private Vector2 eyeballOffset = new Vector2(10, -13); // Example offset, adjust as needed
     private Texture2D eyeballTexture;
@@ -27,89 +28,25 @@ namespace SimpleGame
         public Lizard(GraphicsDevice graphicsDevice, ContentManager content, Vector2 startPosition)
             : base(200f)
         {
-            allPositions = new List<Vector2>();
-            allRadii = new List<int>();
-            var LizardCol = Color.Cyan;
+           
+            
+            lizardSpine = new LizardSpine(graphicsDevice, content, startPosition);
 
+            allPositions = lizardSpine.allPositions;
+            allRadii = lizardSpine.allRadii;
             // Load the head texture
-            headTexture = content.Load<Texture2D>("head_50");
+            foreach (var part in lizardSpine.SpineParts){
+                bodyParts.Add(part);
+            }
+
             eyeballTexture = content.Load<Texture2D>("LizardEye");
 
             // Initialize head with the texture
-            List<Vector2> headPos = new List<Vector2> { startPosition };
-            List<Texture2D> headTextures = new List<Texture2D> { headTexture };
-            List<int> headRadii = new List<int> { 60 };
-            var head = new BodyPart(headPos, headTextures, headRadii, "Head");
-            bodyParts.Add(head);
-            allPositions.AddRange(headPos);
-            allRadii.AddRange(headRadii);
-
-            // Initialize other parts of the lizard (body and tail) as before
-
-            // Body initialization
-            List<Vector2> bodyPositions = new List<Vector2>
-            {
-                startPosition - new Vector2(0, 25),
-                startPosition - new Vector2(0, 45),
-                startPosition - new Vector2(0, 70),
-                startPosition - new Vector2(0, 95),
-            };
-            List<Texture2D> bodyTextures = new List<Texture2D>
-            {
-                CreateCircleTexture(graphicsDevice, 20, LizardCol),
-                CreateCircleTexture(graphicsDevice, 25, LizardCol),
-                CreateCircleTexture(graphicsDevice, 25, LizardCol),
-                CreateCircleTexture(graphicsDevice, 25, LizardCol),
-            };
-            List<int> bodyRadii = new List<int> { 20, 25, 25, 25 };
-            var body = new BodyPart(bodyPositions, bodyTextures, bodyRadii, "Body") { PreviousPart = head };
-            bodyParts.Add(body);
-            allPositions.AddRange(bodyPositions);
-            allRadii.AddRange(bodyRadii);
-
-            // Tail initialization
-            List<Vector2> tailPositions = new List<Vector2>
-            {
-                startPosition - new Vector2(0, 75),
-                startPosition - new Vector2(0, 100),
-                startPosition - new Vector2(0, 125),
-                startPosition - new Vector2(0, 150),
-                startPosition - new Vector2(0, 175),
-                startPosition - new Vector2(0, 200),
-                startPosition - new Vector2(0, 225),
-                startPosition - new Vector2(0, 230),
-                startPosition - new Vector2(0, 240),
-                startPosition - new Vector2(0, 250),
-            };
-            List<Texture2D> tailTextures = new List<Texture2D>
-            {
-                CreateCircleTexture(graphicsDevice, 20, LizardCol),
-                CreateCircleTexture(graphicsDevice, 18, LizardCol),
-                CreateCircleTexture(graphicsDevice, 16, LizardCol),
-                CreateCircleTexture(graphicsDevice, 14, LizardCol),
-                CreateCircleTexture(graphicsDevice, 12, LizardCol),
-                CreateCircleTexture(graphicsDevice, 10, LizardCol),
-                CreateCircleTexture(graphicsDevice, 8, LizardCol),
-                CreateCircleTexture(graphicsDevice, 6, LizardCol),
-                CreateCircleTexture(graphicsDevice, 4, LizardCol),
-                CreateCircleTexture(graphicsDevice, 2, LizardCol),
-            };
-            List<int> tailRadii = new List<int> { 20, 18, 16, 14, 12, 10, 8, 6, 4, 2 };
-            var tail = new BodyPart(tailPositions, tailTextures, tailRadii, "Tail") { PreviousPart = body };
-            bodyParts.Add(tail);
-            allPositions.AddRange(tailPositions);
-            allRadii.AddRange(tailRadii);
+            
 
             // Leg initialization
             float initialBodyAngle = (float)Math.Atan2(allPositions[0].Y - allPositions[1].Y, allPositions[0].X - allPositions[1].X);
-            float legAngleOffset = MathHelper.PiOver4; 
-            float legDistance = 60; 
-
-            legOneTarget = allPositions[1] + new Vector2((float)Math.Cos(initialBodyAngle + legAngleOffset), (float)Math.Sin(initialBodyAngle + legAngleOffset)) * legDistance;
-            legOneFoot = legOneTarget;
-            legOneJoint = allPositions[1] + (legOneFoot - allPositions[1]) * 0.6f; 
-
-            this.legTexture = CreateCircleTexture(graphicsDevice, legRadius, Color.Green);
+           
 
             direction = Vector2.UnitX; 
         }
@@ -178,7 +115,7 @@ namespace SimpleGame
             }
 
             int index = 0;
-            foreach (var part in bodyParts)
+            foreach (var part in lizardSpine.SpineParts)
             {
                 for (int i = 0; i < part.Positions.Count; i++, index++)
                 {
